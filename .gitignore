@@ -1,0 +1,14 @@
+# source drawings & extracted/derived data stay local, not tracked
+*.svg
+*.pdf
+*.png
+
+# build outputs of convert_inkscape.py — rebuild with: python convert_inkscape.py
+# (editor.html embeds metadata.json + the background images, so it is a build
+# artifact, not source; the buildable code is editor_template.html)
+/editor.html
+/metadata.json
+
+# OS junk
+Thumbs.db
+.DS_Store

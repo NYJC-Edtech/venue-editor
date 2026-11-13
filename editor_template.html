@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NYJC Floor Plan Editor</title>
+<style>
+  :root{--bg:#1e2430;--panel:#272e3d;--line:#3a4356;--txt:#dfe6f0;--acc:#4da3ff;--warn:#ffb020;--bad:#ff5c5c}
+  *{box-sizing:border-box}
+  body{margin:0;font:13px/1.45 system-ui,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--txt);height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;align-items:center;gap:14px;padding:8px 14px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+  header h1{font-size:15px;margin:0 8px 0 0;font-weight:600}
+  button{background:#33405a;color:var(--txt);border:1px solid var(--line);border-radius:5px;padding:5px 10px;cursor:pointer;font:inherit}
+  button:hover{background:#3d4d6b}
+  button.on{background:var(--acc);color:#0d2137;border-color:var(--acc);font-weight:600}
+  button:disabled{opacity:.45;cursor:default}
+  .grp{display:flex;gap:4px;align-items:center;padding-left:12px;border-left:1px solid var(--line)}
+  select,input[type=text]{background:#1b2130;color:var(--txt);border:1px solid var(--line);border-radius:5px;padding:5px 7px;font:inherit}
+  label.tgl{display:flex;align-items:center;gap:4px;cursor:pointer}
+  main{flex:1;display:flex;min-height:0}
+  #wrap{flex:1;position:relative;background:#141923;min-width:0}
+  #stage{width:100%;height:100%;display:block;cursor:crosshair}
+  #stage.tool-select{cursor:default}
+  aside{width:270px;background:var(--panel);border-left:1px solid var(--line);padding:12px;overflow:auto;flex-shrink:0}
+  aside h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:#9fb0c8;margin:14px 0 6px}
+  aside h2:first-child{margin-top:0}
+  .kv{display:grid;grid-template-columns:88px 1fr;gap:3px 8px;font-size:12.5px}
+  .kv b{color:#9fb0c8;font-weight:500}
+  .kv input,.kv select{width:100%;padding:3px 6px}
+  #readout{background:#1b2130;border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:12.5px}
+  #readout .big{font-size:16px;font-weight:600;color:var(--acc)}
+  #hint{position:absolute;left:12px;bottom:12px;background:rgba(20,26,38,.88);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:12px;color:#aebdcd;max-width:520px}
+  #status{padding:5px 14px;background:var(--panel);border-top:1px solid var(--line);font-size:12px;color:#9fb0c8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #status.warn{color:var(--warn)} #status.bad{color:var(--bad)}
+  dialog{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:16px;width:300px}
+  dialog::backdrop{background:rgba(0,0,0,.55)}
+  dialog h3{margin:0 0 10px;font-size:14px}
+  dialog .row{margin:8px 0}
+  dialog input,dialog select{width:100%}
+  dialog .btns{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+  svg .room path{fill:#eef3f7;stroke:#37474f;stroke-width:.45}
+  svg .withbg .room path{fill-opacity:.82}
+  svg .planbg{filter:grayscale(1) invert(1) contrast(.92) opacity(.42)}
+  svg .room text{font-family:Arial,sans-serif;fill:#1a2733;text-anchor:middle;pointer-events:none;user-select:none}
+  svg .room.sel path{stroke:#ff2f2f;stroke-width:.9}
+  svg .room.sel text{fill:#7a0000}
+  .t-classroom path{fill:#cfe3f7}.t-lab path{fill:#d9f2d9}.t-lecture-theatre path{fill:#fde9c8}
+  .t-hall path{fill:#f3d9f7}.t-canteen path{fill:#fff2c9}.t-library path{fill:#d9e8ff}
+  .t-office path{fill:#ffe3ec}.t-wc path{fill:#d9f7f7}.t-stair-hall path{fill:#e8e8e8}
+  .t-corridor path{fill:#f5f5f0}.t-open-area path{fill:#fbfbf8}.t-void path{fill:#fff;stroke:#90a4ae;stroke-dasharray:2 1.2}
+  .t-canopy path{fill:#f0f0f0;stroke:#90a4ae;stroke-dasharray:3 1.5}.t-atrium path{fill:#eef7ee;stroke:#558b2f}
+  .t-store path{fill:#eceff1}.t-lobby path{fill:#f8f0e3}.t-sports-hall path{fill:#e2f7e2}
+  .t-computer-lab path{fill:#e1f5fe}.t-av-room path{fill:#ede7f6}.t-music path{fill:#fce4ec}
+  .t-study-area path{fill:#fff8e1}.t-stair path{fill:#e8e8e8}.t-lift path{fill:#dcedc8}.t-entrance path{fill:#e8f5e9}.t-exit path{fill:#ffebee}
+  /* markers: white disc + coloured glyph (Google Material Symbols, Apache 2.0) */
+  .mk .disc{fill:#fff;stroke-width:.35}
+  .mk.restroom .disc{stroke:#00838f}.mk.restroom .glyph{fill:#00838f}
+  .mk.stair .disc{stroke:#5d4037}.mk.stair .glyph{fill:#5d4037}
+  .mk.entrance .disc{stroke:#2e7d32}.mk.entrance .glyph{fill:#2e7d32}
+  .mk.exit .disc{stroke:#c62828}.mk.exit .glyph{fill:#c62828}
+  .mk.lift .disc{stroke:#558b2f}.mk.lift .glyph{fill:#558b2f}
+  .mk.sel .disc{stroke:#ff2f2f;stroke-width:.55}
+  .vtx{fill:#ffb020;stroke:#7a5200;stroke-width:.3;cursor:move}
+  .vtx.new{fill:#4da3ff;cursor:copy}
+  .draw-preview{fill:none;stroke:#ff2f2f;stroke-width:.6;stroke-dasharray:2 1.4}
+  /* floating overlays on the map (Google Maps style) */
+  #levels{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;
+          background:rgba(27,33,48,.93);border:1px solid var(--line);border-radius:9px;overflow:hidden;
+          z-index:6;box-shadow:0 2px 10px rgba(0,0,0,.35)}
+  #levels button{border:0;border-radius:0;background:transparent;padding:7px 12px;min-width:38px;
+                 font-weight:600;color:#aebdcd;border-bottom:1px solid #2c3446}
+  #levels button:last-child{border-bottom:0}
+  #levels button:hover{background:#3d4d6b;color:var(--txt)}
+  #levels button.on{background:var(--acc);color:#0d2137}
+  #scalebar{position:absolute;right:14px;bottom:12px;z-index:6;display:flex;align-items:center;gap:7px;pointer-events:none}
+  #scalebar .bar{height:9px;border-left:2px solid #fff;border-right:2px solid #fff;position:relative;
+                 filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.7))}
+  #scalebar .bar::after{content:"";position:absolute;left:0;right:0;top:50%;transform:translateY(-1px);height:2px;background:#fff}
+  #scalebar span{font-size:12px;font-weight:600;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.85),0 0 3px rgba(0,0,0,.5)}
+  #zoomrf{position:absolute;right:14px;bottom:44px;z-index:6;background:rgba(27,33,48,.92);border:1px solid var(--line);
+          border-radius:6px;padding:3px 9px;font-size:12px;color:var(--txt);opacity:0;transition:opacity .5s;pointer-events:none}
+  #zoomrf.show{opacity:1}
+</style>
+</head>
+<body>
+<header>
+  <h1>NYJC Floor Plans</h1>
+  <div class="grp">
+    <button id="bSelect" class="on" title="Select / move (V)">Select</button>
+    <button id="bPoly" title="Draw polygon room (P)">+ Polygon</button>
+    <button id="bRect" title="Draw rectangular room (R)">+ Rect</button>
+    <select id="markerKind" title="Marker kind to place">
+      <option value="">+ Marker…</option>
+      <option value="restroom">Restroom</option>
+      <option value="stair">Staircase</option>
+      <option value="lift">Elevator / lift</option>
+      <option value="entrance">Entrance</option>
+      <option value="exit">Exit</option>
+    </select>
+  </div>
+  <div class="grp">
+    <button id="bUndo" title="Undo (Ctrl+Z)">↶ Undo</button>
+    <button id="bRedo" title="Redo (Ctrl+Y)">↷ Redo</button>
+    <button id="bDelete" title="Delete selected (Del)">Delete</button>
+  </div>
+  <div class="grp">
+    <button id="bSvg" title="Download this storey as SVG">Export SVG</button>
+    <button id="bJson" title="Download metadata.json (all floors)">Export JSON</button>
+    <button id="bImport" title="Load a metadata.json">Import JSON</button>
+    <input type="file" id="fileJson" accept=".json,application/json" hidden>
+    <button id="bReset" title="Discard edits, restore embedded data">Reset</button>
+  </div>
+  <div class="grp">
+    <label class="tgl"><input type="checkbox" id="cGrid" checked> grid</label>
+    <label class="tgl" title="Show / hide the base floor plan behind the venues"><input type="checkbox" id="cBg" checked> plan</label>
+  </div>
+</header>
+<main>
+  <div id="wrap">
+    <svg id="stage" xmlns="http://www.w3.org/2000/svg"></svg>
+    <div id="hint"></div>
+    <div id="levels" title="Storey"></div>
+    <div id="scalebar"><div class="bar"></div><span id="scaleMetres">–</span></div>
+    <div id="zoomrf" title="Approximate print scale (assumes a 96 dpi screen at 100% browser zoom)"></div>
+  </div>
+  <aside>
+    <h2>Selection</h2>
+    <div id="readout">Nothing selected.<br>Click a room or marker.</div>
+    <div id="props" style="display:none">
+      <div class="kv">
+        <b>Name</b><input type="text" id="pName">
+        <b>Type</b><select id="pType"></select>
+        <b>Vertices</b><span id="pVerts">–</span>
+      </div>
+      <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+        <button id="bAddVtxMode" title="Next edge-click inserts a vertex">Insert vertex</button>
+        <button id="bDelVtx" title="Delete the highlighted vertex">Delete vertex</button>
+      </div>
+    </div>
+    <h2>Scale</h2>
+    <div class="kv"><b>Drawing</b><span id="scaleDrawing">–</span><b>Units</b><span id="scaleUnits">–</span></div>
+    <h2>Data</h2>
+    <div style="font-size:12px;color:#9fb0c8" id="dataInfo"></div>
+    <h2>Shortcuts</h2>
+    <div style="font-size:12px;color:#9fb0c8;line-height:1.7">
+      V select · P polygon · R rect<br>
+      1–5 — switch storey<br>
+      Enter / double-click — close polygon<br>
+      Esc — cancel drawing<br>
+      Del — delete selection<br>
+      Ctrl+Z / Ctrl+Y — undo / redo<br>
+      Alt+click vertex — delete it<br>
+      Drag label — move room label<br>
+      Mouse wheel — zoom · drag empty — pan
+    </div>
+  </aside>
+</main>
+<div id="status">Ready.</div>
+<dialog id="dlg">
+  <h3 id="dlgTitle">New room</h3>
+  <div class="row"><input type="text" id="dlgName" placeholder="Room name"></div>
+  <div class="row"><select id="dlgType"></select></div>
+  <div class="btns"><button id="dlgCancel">Cancel</button><button id="dlgOk">Create</button></div>
+</dialog>
+
+<script>
+"use strict";
+/* Embedded floor data (generated from nyjc-floor-plans.pdf, scale 1:700).
+   __DATA__ placeholder is replaced at build time with the full metadata JSON. */
+const EMBEDDED = /*__DATA__*/ null;
+const LS_KEY = "nyjc-floorplans-v1";
+
+const TYPES = ["room","classroom","lab","lecture-theatre","hall","canteen","library","office","wc",
+  "stair-hall","corridor","open-area","void","canopy","atrium","store","lobby","sports-hall",
+  "computer-lab","av-room","music","study-area","stair","lift","entrance","exit"];
+const MKINDS = ["restroom","stair","lift","entrance","exit"];
+/* Marker glyphs: Google Material Symbols (outlined, fill1), 24-unit grid,
+   viewBox 0 -960 960 960, centred at (480,-480).
+   Source https://fonts.google.com/icons (google/material-design-icons),
+   Apache License 2.0 — https://www.apache.org/licenses/LICENSE-2.0 */
+const GLYPH = {
+  restroom: "M220-80v-300h-60v-220q0-33 23.5-56.5T240-680h120q33 0 56.5 23.5T440-600v220h-60v300H220Zm80-640q-33 0-56.5-23.5T220-800q0-33 23.5-56.5T300-880q33 0 56.5 23.5T380-800q0 33-23.5 56.5T300-720ZM600-80v-240H480l102-306q8-26 29.5-40t48.5-14q27 0 48.5 14t29.5 40l102 306H720v240H600Zm60-640q-33 0-56.5-23.5T580-800q0-33 23.5-56.5T660-880q33 0 56.5 23.5T740-800q0 33-23.5 56.5T660-720Z",
+  stair: "M240-240h177v-133h103v-133h103v-134h97v-80H543v133H440v133H337v134h-97v80Zm-40 120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Z",
+  lift: "M280-240h120v-160h40v-100q0-33-23.5-56.5T360-580h-40q-33 0-56.5 23.5T240-500v100h40v160Zm60-380q21 0 35.5-14.5T390-670q0-21-14.5-35.5T340-720q-21 0-35.5 14.5T290-670q0 21 14.5 35.5T340-620Zm180 100h200L620-680 520-520Zm100 240 100-160H520l100 160ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Z",
+  entrance: "M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z",
+  exit: "M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z",
+};
+const FILL = {room:"#eef3f7",classroom:"#cfe3f7",lab:"#d9f2d9","lecture-theatre":"#fde9c8",hall:"#f3d9f7",
+  canteen:"#fff2c9",library:"#d9e8ff",office:"#ffe3ec",wc:"#d9f7f7","stair-hall":"#e8e8e8",
+  corridor:"#f5f5f0","open-area":"#fbfbf8",void:"#ffffff",canopy:"#f0f0f0",atrium:"#eef7ee",
+  store:"#eceff1",lobby:"#f8f0e3","sports-hall":"#e2f7e2","computer-lab":"#e1f5fe",
+  "av-room":"#ede7f6",music:"#fce4ec","study-area":"#fff8e1",stair:"#e8e8e8",lift:"#dcedc8",
+  entrance:"#e8f5e9",exit:"#ffebee"};
+const ORD = {void:0,"open-area":1,canopy:2,corridor:3};
+
+/* metres per SVG user unit (from site metadata; 1 for unit-less data) */
+const SCALE = (EMBEDDED && EMBEDDED.site && EMBEDDED.site.scale_m_per_unit) || 1;
+let bgEnabled = true;
+
+/* ---------- state ---------- */
+let data, floor, sel = null /* {kind:'room'|'marker', idx, vtx} */, tool = "select",
+    draft = null /* polygon points being drawn */, history = [], future = [],
+    view = null /* {x,y,w,h} */, drag = null;
+
+function load() {
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(LS_KEY)); } catch(e) {}
+  data = saved || JSON.parse(JSON.stringify(EMBEDDED));
+  if (!data || !data.storeys) { data = JSON.parse(JSON.stringify(EMBEDDED)); }
+}
+function save() {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch(e) { status("Autosave failed (storage full?)", "warn"); }
+}
+const roomsOf = f => data.storeys[f].rooms;
+const marksOf = f => data.storeys[f].markers;
+function snapshot() { history.push(JSON.stringify(data)); if (history.length > 80) history.shift(); future.length = 0; updateBtns(); }
+function undo() { if (!history.length) return; future.push(JSON.stringify(data)); data = JSON.parse(history.pop()); sel = null; refresh(); save(); status("Undone"); }
+function redo() { if (!future.length) return; history.push(JSON.stringify(data)); data = JSON.parse(future.pop()); sel = null; refresh(); save(); status("Redone"); }
+
+/* ---------- geometry ---------- */
+const area = pts => { let s = 0; for (let i = 0; i < pts.length; i++) { const [x1,y1] = pts[i], [x2,y2] = pts[(i+1)%pts.length]; s += x1*y2 - x2*y1; } return Math.abs(s)/2; };
+const bboxOf = pts => { let a=[1e9,1e9], b=[-1e9,-1e9]; for (const [x,y] of pts){ a[0]=Math.min(a[0],x); a[1]=Math.min(a[1],y); b[0]=Math.max(b[0],x); b[1]=Math.max(b[1],y);} return [a,b]; };
+const centroid = pts => { let x=0,y=0; for (const p of pts){x+=p[0];y+=p[1];} return [x/pts.length, y/pts.length]; };
+function extents(f) {
+  const all = [...roomsOf(f).map(r=>r.outline).flat(), ...marksOf(f).map(m=>m.point)];
+  const bg = data.storeys[f].background;
+  if (bg) { all.push([bg.x, bg.y], [bg.x+bg.width, bg.y+bg.height]); }
+  const [a,b] = bboxOf(all.length?all:[[0,0]]);
+  const m = 14;
+  return {x:a[0]-m, y:a[1]-m, w:b[0]-a[0]+2*m, h:b[1]-a[1]+2*m};
+}
+
+/* ---------- svg helpers ---------- */
+const NS = "http://www.w3.org/2000/svg", stage = document.getElementById("stage");
+const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); (parent||stage).appendChild(e); return e; };
+function svgPoint(ev) {
+  const pt = stage.createSVGPoint(); pt.x = ev.clientX; pt.y = ev.clientY;
+  const m = stage.getScreenCTM().inverse();
+  const p = pt.matrixTransform(m);
+  return [p.x, p.y];
+}
+
+/* ---------- rendering ---------- */
+function refresh(keepView) {
+  if (sel) {
+    const ok = sel.kind === "room" ? !!roomsOf(floor)[sel.idx] : !!marksOf(floor)[sel.idx];
+    if (!ok) sel = null;
+  }
+  if (!view || !keepView) view = {...extents(floor)};
+  const root = document.getElementById("stage");
+  root.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.h}`);
+  root.dataset.storey = floor;
+  root.classList.toggle("tool-select", tool === "select");
+  root.innerHTML = "";
+  // background floor plan (desaturated, inverted for the dark theme, faded)
+  const bg = data.storeys[floor].background;
+  root.classList.toggle("withbg", !!(bg && bgEnabled));
+  if (bg && bgEnabled) {
+    const im = el("image", {x:bg.x, y:bg.y, width:bg.width, height:bg.height,
+      preserveAspectRatio:"none", class:"planbg"});
+    im.setAttribute("href", bg.href);
+    im.setAttribute("xlink:href", bg.href);
+    stage.appendChild(im);
+  }
+  renderLegend();
+  const gR = el("g", {id:"rooms"});
+  const sorted = [...roomsOf(floor)].map((r,i)=>({r,i})).sort((a,b)=>(ORD[a.r.type]??5)-(ORD[b.r.type]??5));
+  for (const {r,i} of sorted) {
+    const g = el("g", {class:"room t-"+r.type+(sel&&sel.kind==="room"&&sel.idx===i?" sel":""), "data-i":i}, gR);
+    el("path", {d:"M "+r.outline.map(p=>p[0].toFixed(2)+","+p[1].toFixed(2)).join(" L ")+" Z"}, g);
+    const c = r.label || centroid(r.outline);
+    const aM2 = r.area_m2 != null ? r.area_m2 : area(r.outline)*SCALE*SCALE;
+    const fs = aM2 > 60 ? 2.1 : aM2 > 25 ? 1.7 : 1.35;
+    const t = el("text", {x:c[0].toFixed(2), y:c[1].toFixed(2), "font-size":fs, class:"lbl", "data-i":i}, g);
+    t.textContent = r.name;
+  }
+  stage.appendChild(gR);
+  const gM = el("g", {id:"markers"});
+  const u = view.w / Math.max(1, stage.clientWidth);   // svg units per screen px
+  const mR = 13.5*u, mS = 18*u/960;                    // constant on-screen size
+  marksOf(floor).forEach((m,i) => {
+    const g = el("g", {class:"mk "+m.kind+(sel&&sel.kind==="marker"&&sel.idx===i?" sel":""), transform:`translate(${m.point[0]},${m.point[1]})`, "data-i":i}, gM);
+    markerGlyph(g, m.kind, mR, mS);
+  });
+  stage.appendChild(gM);
+  if (sel && sel.kind === "room") drawVertexHandles();
+  if (draft) drawDraft();
+  if (document.getElementById("cGrid").checked) drawGrid();
+  document.getElementById("bUndo").disabled = !history.length;
+  document.getElementById("bRedo").disabled = !future.length;
+  document.getElementById("bDelete").disabled = !sel;
+  updateScaleBar();
+  const nR = roomsOf(floor).length, nM = marksOf(floor).length;
+  document.getElementById("dataInfo").textContent =
+    `Floor ${floor}: ${nR} venues, ${nM} markers. Source: ${(data.site && data.site.source) || "embedded"}.` +
+    (localStorage.getItem(LS_KEY) ? "\nAutosaved edits loaded (Reset restores original)." : "\nOriginal data (unsaved edits go to localStorage).");
+  updateProps();
+}
+function markerGlyph(g, kind, R, gs) {
+  /* white disc + coloured Material Symbol; R = disc radius, gs = glyph scale
+     (svg units per 960-unit icon unit) — both chosen by the caller so the
+     legend, map and export can size independently */
+  el("circle", {class:"disc", r:R}, g);
+  el("path", {class:"glyph", d:GLYPH[kind], transform:`scale(${gs}) translate(-480 480)`}, g);
+}
+function drawVertexHandles() {
+  const r = roomsOf(floor)[sel.idx], g = el("g", {id:"vhandles"});
+  r.outline.forEach((p, vi) => {
+    const c = el("circle", {class:"vtx", cx:p[0], cy:p[1], r:(view.w/220).toFixed(3), "data-vi":vi}, g);
+    if (sel.vtx === vi) c.setAttribute("r", (view.w/130).toFixed(3));
+  });
+  for (let i = 0; i < r.outline.length; i++) {
+    const a = r.outline[i], b = r.outline[(i+1)%r.outline.length];
+    const m = [(a[0]+b[0])/2, (a[1]+b[1])/2];
+    const c = el("circle", {class:"vtx new", cx:m[0], cy:m[1], r:(view.w/320).toFixed(3), "data-edge":i}, g);
+  }
+  stage.appendChild(g);
+}
+function drawDraft() {
+  const g = el("g", {id:"draft"});
+  if (draft.pts.length) {
+    el("polyline", {class:"draw-preview", points:draft.pts.map(p=>p.join(",")).join(" ")}, g);
+    if (draft.pts.length > 2) el("line", {class:"draw-preview", x1:draft.pts.at(-1)[0], y1:draft.pts.at(-1)[1], x2:draft.cur[0], y2:draft.cur[1]}, g);
+    if (draft.rect && draft.pts.length === 1) {
+      const [x0,y0] = draft.pts[0], [x1,y1] = draft.cur;
+      el("rect", {class:"draw-preview", x:Math.min(x0,x1), y:Math.min(y0,y1), width:Math.abs(x1-x0), height:Math.abs(y1-y0)}, g);
+    }
+    draft.pts.forEach(p => el("circle", {cx:p[0], cy:p[1], r:view.w/300, fill:"#ff2f2f"}, g));
+  }
+  stage.appendChild(g);
+}
+function drawGrid() {
+  const g = el("g", {id:"grid", opacity:.5});
+  const step = view.w > 260 ? 50 : view.w > 120 ? 20 : 10;
+  const x0 = Math.floor(view.x/step)*step, y0 = Math.floor(view.y/step)*step;
+  for (let x = x0; x <= view.x+view.w; x += step)
+    el("line", {x1:x, y1:view.y, x2:x, y2:view.y+view.h, stroke: x% (step*5)===0 ? "#33415c":"#232b3b", "stroke-width":view.w/1400}, g);
+  for (let y = y0; y <= view.y+view.h; y += step)
+    el("line", {x1:view.x, y1:y, x2:view.x+view.w, y2:y, stroke: y% (step*5)===0 ? "#33415c":"#232b3b", "stroke-width":view.w/1400}, g);
+  const c = el("g", {}, g); // origin cross (tower centre)
+  el("path", {d:`M-3 0H3M0 -3V3`, stroke:"#4da3ff", "stroke-width":view.w/900}, c);
+  stage.appendChild(g);
+}
+function renderLegend() {
+  // docked overlay panel: enough headroom that the title's ascenders never clip,
+  // and a backing sheet so it stays readable over the faded plan
+  const pad = view.w * 0.02;
+  const fsT = view.w / 62;            // title font
+  const fs  = view.w / 75;            // item font
+  const rowH = fs * 1.5;
+  const lx = view.x + pad;
+  const panelTop = view.y + pad * 0.55;
+  const ty = panelTop + pad * 0.45 + fsT * 1.1;   // title baseline (ascenders stay inside)
+  const items = [["classroom","Classroom / tutorial"],["lab","Science lab"],["lecture-theatre","Lecture theatre"],
+    ["hall","Hall / stage"],["canteen","Canteen"],["library","Library"],["office","Office / staff"],
+    ["wc","Toilets"],["stair-hall","Stair / lobby"],["corridor","Corridor"],["open-area","Open area"],["void","Void / roof"]];
+  const subY = ty + fsT * 0.95;
+  const firstRow = subY + fs * 1.15;
+  const panelH = (firstRow - panelTop) + items.length * rowH + MKINDS.length * rowH + fs * 1.2;
+  const g = el("g", {id:"legend", "font-family":"Arial", fill:"#dfe6f0"});
+  el("rect", {x:lx - fs*0.7, y:panelTop, width:view.w * 0.19, height:panelH, rx:fs*0.35,
+              fill:"rgba(17,23,33,0.8)", stroke:"#3a4356", "stroke-width":view.w/1400}, g);
+  el("text", {x:lx, y:ty, "font-size":fsT, "font-weight":"bold"}, g).textContent =
+    `NANYANG JUNIOR COLLEGE — ${floor}${["ST","ND","RD"][floor-1]||"TH"} STOREY (editing view)`;
+  el("text", {x:lx, y:subY, "font-size":fs*0.95, fill:"#9fb0c8"}, g).textContent =
+    `${(data.site && data.site.unit_mapping || "").split(";")[0].trim()} · drawing scale ${((data.site&&data.site.source_scale)||"—")}`;
+  items.forEach(([t,lbl], i) => {
+    const yy = firstRow + i*rowH;
+    el("rect", {x:lx, y:yy-fs*0.75, width:fs*1.9, height:fs*1.15, fill:FILL[t], stroke:"#8a97a8", "stroke-width":view.w/1600}, g);
+    el("text", {x:lx+fs*2.5, y:yy, fill:"#dfe6f0"}, g).textContent = lbl;
+  });
+  const my = firstRow + items.length*rowH + fs*0.45;
+  MKINDS.forEach((k, i) => {
+    const gg = el("g", {class:"mk "+k, transform:`translate(${lx+fs*1.1},${my+i*rowH})`}, g);
+    markerGlyph(gg, k, fs*1.05, fs*1.5/960);
+    el("text", {x:lx+fs*2.5, y:my+i*rowH+fs*0.15, fill:"#dfe6f0"}, g).textContent =
+      {restroom:"Restroom", stair:"Staircase", lift:"Elevator", entrance:"Entrance", exit:"Exit"}[k];
+  });
+}
+
+/* ---------- scale bar + zoom ratio ---------- */
+function metresPerScreenPx() {
+  return SCALE / (stage.clientWidth / view.w);   // ground metres per screen pixel
+}
+function updateScaleBar() {
+  if (!view) return;
+  const mpp = metresPerScreenPx();
+  const nice = [1,2,5,10,20,50,100,200,500,1000,2000,5000];
+  let m = nice[nice.length-1];
+  for (const v of nice) if (v/mpp >= 55) { m = v; break; }   // first nice value with a ≥55 px bar
+  document.querySelector("#scalebar .bar").style.width = Math.round(m/mpp) + "px";
+  $("scaleMetres").textContent = m >= 1000 ? m/1000 + " km" : m + " m";
+}
+let rfTimer = null;
+function showZoomRF() {
+  if (!view) return;
+  // representative fraction: 1 screen px = 25.4/96 mm on a 96 dpi display
+  const rf = Math.round(metresPerScreenPx()*1000/(25.4/96));
+  const r = Math.pow(10, Math.max(0, String(rf).length - 2));   // 2 significant figures
+  $("zoomrf").textContent = "1 : " + Math.round(rf/r)*r;
+  $("zoomrf").classList.add("show");
+  clearTimeout(rfTimer);
+  rfTimer = setTimeout(() => $("zoomrf").classList.remove("show"), 1500);
+}
+
+/* ---------- ui plumbing ---------- */
+const $ = id => document.getElementById(id);
+function status(msg, cls) { const s = $("status"); s.textContent = msg; s.className = cls||""; }
+function selRoom() { return sel && sel.kind === "room" ? roomsOf(floor)[sel.idx] : null; }
+function selMark() { return sel && sel.kind === "marker" ? marksOf(floor)[sel.idx] : null; }
+const obbOf = pts => {          // minimum-area oriented bounding rect (w, h) in units
+  const n = pts.length;
+  if (n < 3) { const [a,b] = bboxOf(pts); return [b[0]-a[0], b[1]-a[1]]; }
+  let best = null;
+  for (let i = 0; i < n; i++) {
+    const x1 = pts[i][0], y1 = pts[i][1], x2 = pts[(i+1)%n][0], y2 = pts[(i+1)%n][1];
+    const dx = x2-x1, dy = y2-y1, L = Math.hypot(dx, dy);
+    if (L < 1e-9) continue;
+    const ux = dx/L, uy = dy/L;
+    let uMin = 1e18, uMax = -1e18, vMin = 1e18, vMax = -1e18;
+    for (const [x, y] of pts) {
+      const u = x*ux + y*uy, v = -x*uy + y*ux;
+      uMin = Math.min(uMin, u); uMax = Math.max(uMax, u);
+      vMin = Math.min(vMin, v); vMax = Math.max(vMax, v);
+    }
+    const w = uMax-uMin, h = vMax-vMin;
+    if (!best || w*h < best[0]*best[1]) best = [w, h];
+  }
+  return best || [0, 0];
+};
+function updateProps() {
+  const r = selRoom(), m = selMark(), ro = $("readout"), pr = $("props");
+  if (r) {
+    const [uw, uh] = obbOf(r.outline);
+    const w = (uw*SCALE).toFixed(1), d = (uh*SCALE).toFixed(1);
+    const ar = (r.area_m2 != null ? r.area_m2 : area(r.outline)*SCALE*SCALE).toFixed(1);
+    ro.innerHTML = `<div>${r.name || "(unnamed room)"}</div>
+      <div class="big">${w} m × ${d} m</div><div>area ≈ ${ar} m² · ${r.outline.length} vertices</div>`;
+    pr.style.display = "";
+    $("pName").value = r.name; $("pType").value = r.type;
+    $("pVerts").textContent = r.outline.length;
+  } else if (m) {
+    ro.innerHTML = `<div>${m.name}</div><div>marker: ${m.kind}</div><div>at ${(m.point[0]*SCALE).toFixed(1)}, ${(m.point[1]*SCALE).toFixed(1)} m</div>`;
+    pr.style.display = "none";
+  } else {
+    ro.innerHTML = "Nothing selected.<br>Click a room or marker.";
+    pr.style.display = "none";
+  }
+}
+function setTool(t) {
+  tool = t; draft = null;
+  ["bSelect","bPoly","bRect"].forEach(b => $(b).classList.toggle("on", $(b).id === "b"+t.charAt(0).toUpperCase()+t.slice(1).replace("oly","oly").replace("ect","ect") || (t==="select"&&b==="bSelect") || (t==="poly"&&b==="bPoly") || (t==="rect"&&b==="bRect")));
+  $("bPoly").classList.toggle("on", t==="poly");
+  $("bRect").classList.toggle("on", t==="rect");
+  $("bSelect").classList.toggle("on", t==="select");
+  $("markerKind").value = "";
+  const hints = {
+    select: "Select: click a room/marker · drag to move · drag yellow vertices to reshape · click a blue + to insert a vertex · Alt-click a vertex to remove it · drag a label to move it · wheel = zoom, drag empty = pan.",
+    poly: "Polygon: click to place vertices, Enter or double-click to close (min 3), Esc cancels.",
+    rect: "Rectangle: click two opposite corners.",
+    marker: `Marker: click to place a ${$ ? $("markerKind").value : ""} marker.`,
+  };
+  $("hint").textContent = hints[tool === "marker" ? "marker" : tool];
+  refresh(true);
+}
+function askRoom(defaults) {
+  return new Promise(res => {
+    $("dlgTitle").textContent = defaults.title;
+    $("dlgName").value = defaults.name || "";
+    $("dlgType").value = defaults.type || "classroom";
+    const dlg = $("dlg");
+    dlg.showModal();
+    $("dlgName").focus();
+    const done = ok => { dlg.close(); res(ok ? {name:$("dlgName").value.trim(), type:$("dlgType").value} : null); };
+    $("dlgOk").onclick = () => done(true);
+    $("dlgCancel").onclick = () => done(false);
+    dlg.oncancel = () => res(null);
+  });
+}
+function nextId(f) {
+  const used = new Set(roomsOf(f).map(r => r.id));
+  let n = 1; while (used.has(`s${f}-r${String(n).padStart(2,"0")}`)) n++;
+  return `s${f}-r${String(n).padStart(2,"0")}`;
+}
+async function commitDraft() {
+  if (!draft) return;
+  let outline;
+  if (draft.rect) {
+    if (draft.pts.length < 1 || !draft.cur) return cancelDraft();
+    const [x0,y0] = draft.pts[0], [x1,y1] = draft.cur;
+    outline = [[Math.min(x0,x1),Math.min(y0,y1)],[Math.max(x0,x1),Math.min(y0,y1)],
+               [Math.max(x0,x1),Math.max(y0,y1)],[Math.min(x0,x1),Math.max(y0,y1)]]
+               .map(p => [+p[0].toFixed(2), +p[1].toFixed(2)]);
+  } else {
+    if (draft.pts.length < 3) { status("A polygon needs at least 3 vertices.", "warn"); return; }
+    outline = draft.pts.map(p => [+p[0].toFixed(2), +p[1].toFixed(2)]);
+  }
+  const ans = await askRoom({title:"New room", type:"classroom"});
+  if (!ans) return cancelDraft();
+  snapshot();
+  roomsOf(floor).push({id:nextId(floor), name:ans.name || "Room", type:ans.type, outline,
+                       area_m2:+(area(outline)*SCALE*SCALE).toFixed(1)});
+  const [a,b] = bboxOf(outline);
+  roomsOf(floor).at(-1).bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
+  sel = {kind:"room", idx:roomsOf(floor).length-1};
+  draft = null; save(); refresh(true);
+  status(`Room "${ans.name}" added.`);
+}
+function cancelDraft() { draft = null; refresh(true); setTool("select"); }
+function deleteSel() {
+  if (!sel) return;
+  snapshot();
+  if (sel.kind === "room") {
+    const r = roomsOf(floor)[sel.idx];
+    if (!confirm(`Delete room "${r.name}"?`)) { history.pop(); future.length = 0; updateBtns(); return; }
+    roomsOf(floor).splice(sel.idx, 1);
+    status("Room deleted.");
+  } else {
+    marksOf(floor).splice(sel.idx, 1);
+    status("Marker deleted.");
+  }
+  sel = null; save(); refresh(true);
+}
+
+/* ---------- pointer interactions ---------- */
+stage.addEventListener("pointerdown", ev => {
+  if (ev.button !== 0) return;
+  const [wx, wy] = svgPoint(ev);
+  const vt = ev.target.closest ? ev.target.closest(".vtx") : null;
+  const lbl = ev.target.closest ? ev.target.closest("text.lbl") : null;
+  const mk = ev.target.closest ? ev.target.closest(".mk") : null;
+  const rm = ev.target.closest ? ev.target.closest(".room") : null;
+
+  if (tool === "poly" || tool === "rect") {
+    if (!draft) draft = {pts:[], cur:[wx,wy], rect: tool==="rect"};
+    if (draft.rect && draft.pts.length === 1) { draft.cur = [wx,wy]; commitDraft(); }
+    else if (!draft.rect && draft.pts.length >= 3 && Math.hypot(wx-draft.pts[0][0], wy-draft.pts[0][1]) < view.w/40) commitDraft();
+    else draft.pts.push([wx, wy]);
+    refresh(true);
+    return;
+  }
+  if (tool === "marker") {
+    const kind = $("markerKind").value;
+    if (!kind) { status("Pick a marker kind first.", "warn"); return; }
+    snapshot();
+    marksOf(floor).push({kind, name: kind.charAt(0).toUpperCase()+kind.slice(1), point:[+wx.toFixed(2), +wy.toFixed(2)]});
+    sel = {kind:"marker", idx:marksOf(floor).length-1};
+    save(); refresh(true); status(kind + " marker placed.");
+    return;
+  }
+  if (vt) {
+    const r = selRoom();
+    const preSnap = JSON.stringify(data);
+    if (vt.dataset.edge !== undefined) {
+      const i = +vt.dataset.edge;
+      r.outline.splice(i+1, 0, [(a=>(a[0]+a[1])/2)([r.outline[i][0], r.outline[(i+1)%r.outline.length][0]]),
+                                (a=>(a[0]+a[1])/2)([r.outline[i][1], r.outline[(i+1)%r.outline.length][1]])]);
+      sel.vtx = i+1;
+      history.push(preSnap); if (history.length > 80) history.shift(); future.length = 0;
+      status("Vertex inserted.");
+    } else if (ev.altKey) {
+      if (r.outline.length <= 3) { status("A room needs at least 3 vertices.", "warn"); return; }
+      r.outline.splice(+vt.dataset.vi, 1);
+      sel.vtx = null;
+      history.push(preSnap); if (history.length > 80) history.shift(); future.length = 0;
+      status("Vertex deleted.");
+    } else {
+      drag = {type:"vertex", idx:sel.idx, vi:+vt.dataset.vi, start:[wx,wy],
+              orig:r.outline[+vt.dataset.vi].slice(), snap:preSnap, moved:false};
+    }
+    save(); refresh(true);
+    return;
+  }
+  if (lbl && sel && sel.kind === "room" && +lbl.dataset.i === sel.idx) {
+    const r = selRoom();
+    drag = {type:"label", idx:sel.idx, start:[wx,wy], orig:(r.label||centroid(r.outline)).slice(), snap:JSON.stringify(data), moved:false};
+    return;
+  }
+  if (mk) {
+    sel = {kind:"marker", idx:+mk.dataset.i, vtx:null};
+    drag = {type:"marker", idx:sel.idx, start:[wx,wy], orig:marksOf(floor)[sel.idx].point.slice(), snap:JSON.stringify(data), moved:false};
+    refresh(true);
+    return;
+  }
+  if (rm) {
+    const i = +rm.dataset.i;
+    if (!sel || sel.kind !== "room" || sel.idx !== i) { sel = {kind:"room", idx:i, vtx:null}; refresh(true); }
+    const r = roomsOf(floor)[i];
+    drag = {type:"room", idx:i, start:[wx,wy],
+            orig:r.outline.map(p=>p.slice()), origLabel:(r.label||centroid(r.outline)).slice(), snap:JSON.stringify(data), moved:false};
+    return;
+  }
+  // empty space: pan
+  drag = {type:"pan", start:[wx,wy], origView:{...view}};
+  if (sel) { sel = null; refresh(true); }
+});
+stage.addEventListener("pointermove", ev => {
+  if (!drag) { if (draft) { const [wx,wy] = svgPoint(ev); draft.cur = [wx,wy]; refresh(true); } return; }
+  const [wx, wy] = svgPoint(ev);
+  if (drag.type === "pan") {
+    view.x = drag.origView.x - (wx - drag.start[0]);
+    view.y = drag.origView.y - (wy - drag.start[1]);
+    refresh(true); return;
+  }
+  if (!drag.moved && Math.hypot(wx-drag.start[0], wy-drag.start[1]) > 0.3) drag.moved = true;
+  const r = drag.type === "vertex" ? roomsOf(floor)[drag.idx] : drag.type === "room" ? roomsOf(floor)[drag.idx] : null;
+  if (drag.type === "vertex") {
+    r.outline[drag.vi] = [+wx.toFixed(2), +wy.toFixed(2)];
+  } else if (drag.type === "room") {
+    const dx = wx - drag.start[0], dy = wy - drag.start[1];
+    r.outline = drag.orig.map(p => [+(p[0]+dx).toFixed(2), +(p[1]+dy).toFixed(2)]);
+    r.label = [+(drag.origLabel[0]+dx).toFixed(2), +(drag.origLabel[1]+dy).toFixed(2)];
+  } else if (drag.type === "label") {
+    const r = roomsOf(floor)[drag.idx];
+    r.label = [+(drag.orig[0]+wx-drag.start[0]).toFixed(2), +(drag.orig[1]+wy-drag.start[1]).toFixed(2)];
+  } else if (drag.type === "marker") {
+    marksOf(floor)[drag.idx].point = [+wx.toFixed(2), +wy.toFixed(2)];
+  }
+  refresh(true);
+});
+stage.addEventListener("pointerup", () => {
+  if (!drag) return;
+  if (drag.type !== "pan" && drag.moved) {
+    history.push(drag.snap); if (history.length > 80) history.shift(); future.length = 0;
+    save(); updateProps(); status("Edit applied.");
+  }
+  drag = null; refresh(true);
+});
+stage.addEventListener("dblclick", ev => {
+  if ((tool === "poly") && draft && draft.pts.length >= 3) commitDraft();
+});
+stage.addEventListener("wheel", ev => {
+  ev.preventDefault();
+  const [wx, wy] = svgPoint(ev);
+  const k = ev.deltaY > 0 ? 1.15 : 1/1.15;
+  view = {x: wx-(wx-view.x)*k, y: wy-(wy-view.y)*k, w: view.w*k, h: view.h*k};
+  refresh(true);
+  showZoomRF();
+}, {passive:false});
+
+document.addEventListener("keydown", ev => {
+  if (ev.target.tagName === "INPUT" || ev.target.tagName === "SELECT" || ev.target.tagName === "TEXTAREA") return;
+  if (ev.key === "Escape") { if (draft) cancelDraft(); else { sel = null; refresh(true); } }
+  else if (ev.key === "Enter" && draft) commitDraft();
+  else if ((ev.key === "Delete" || ev.key === "Backspace") && sel) { ev.preventDefault(); deleteSel(); }
+  else if ((ev.ctrlKey||ev.metaKey) && ev.key.toLowerCase() === "z" && !ev.shiftKey) { ev.preventDefault(); undo(); }
+  else if ((ev.ctrlKey||ev.metaKey) && (ev.key.toLowerCase() === "y" || (ev.key.toLowerCase() === "z" && ev.shiftKey))) { ev.preventDefault(); redo(); }
+  else if (ev.key.toLowerCase() === "v") setTool("select");
+  else if (ev.key.toLowerCase() === "p") setTool("poly");
+  else if (ev.key.toLowerCase() === "r") setTool("rect");
+  else if (/^[1-5]$/.test(ev.key)) { floor = +ev.key; sel = null; view = null; refresh(); markFloorBtn(); }
+});
+
+/* ---------- exports ---------- */
+function download(name, text, mime) {
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([text], {type:mime}));
+  a.download = name; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+}
+function esc(s) { return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function buildSvg(f) {
+  const rs = roomsOf(f), mks = marksOf(f);
+  const {x,y,w,h} = extents(f);
+  const ord = a => [...a.keys()].sort((i,j)=>(ORD[rs[i].type]??5)-(ORD[rs[j].type]??5));
+  const scaleTxt = (data.site && data.site.source_scale) || "see metadata";
+  const unitsTxt = (data.site && data.site.unit_mapping) || `1 unit = ${SCALE} m`;
+  let s = `<?xml version="1.0" encoding="UTF-8"?>\n<svg xmlns="http://www.w3.org/2000/svg" viewBox="${x.toFixed(1)} ${y.toFixed(1)} ${w.toFixed(1)} ${h.toFixed(1)}" width="${w.toFixed(0)}mm" height="${h.toFixed(0)}mm" data-storey="${f}" data-scale="${esc(scaleTxt)}" data-units="${esc(unitsTxt)}">\n`;
+  s += `<title>Nanyang Junior College - Storey ${f} Plan (edited, scale 1:700)</title>\n<style>
+ .room path{fill:#eef3f7;stroke:#37474f;stroke-width:.45}
+ .room text{font-family:Arial,Helvetica,sans-serif;font-size:2.1px;fill:#1a2733;text-anchor:middle}
+ .t-classroom path{fill:#cfe3f7}.t-lab path{fill:#d9f2d9}.t-lecture-theatre path{fill:#fde9c8}.t-hall path{fill:#f3d9f7}
+ .t-canteen path{fill:#fff2c9}.t-library path{fill:#d9e8ff}.t-office path{fill:#ffe3ec}.t-wc path{fill:#d9f7f7}
+ .t-stair-hall path{fill:#e8e8e8}.t-corridor path{fill:#f5f5f0}.t-open-area path{fill:#fbfbf8}
+ .t-void path{fill:#fff;stroke:#90a4ae;stroke-dasharray:2 1.2}.t-canopy path{fill:#f0f0f0;stroke:#90a4ae;stroke-dasharray:3 1.5}
+ .t-atrium path{fill:#eef7ee}.t-store path{fill:#eceff1}.t-lobby path{fill:#f8f0e3}.t-sports-hall path{fill:#e2f7e2}
+ .t-computer-lab path{fill:#e1f5fe}.t-av-room path{fill:#ede7f6}.t-music path{fill:#fce4ec}.t-study-area path{fill:#fff8e1}
+ .t-stair path{fill:#e8e8e8}.t-lift path{fill:#dcedc8}.t-entrance path{fill:#e8f5e9}.t-exit path{fill:#ffebee}
+ /* marker glyphs: Google Material Symbols, Apache License 2.0 */
+ .marker .disc{fill:#fff;stroke-width:.25}
+ .m-restroom .disc{stroke:#00838f}.m-restroom .glyph{fill:#00838f}
+ .m-stair .disc{stroke:#5d4037}.m-stair .glyph{fill:#5d4037}
+ .m-entrance .disc{stroke:#2e7d32}.m-entrance .glyph{fill:#2e7d32}
+ .m-exit .disc{stroke:#c62828}.m-exit .glyph{fill:#c62828}
+ .m-lift .disc{stroke:#558b2f}.m-lift .glyph{fill:#558b2f}
+ .legend{font-family:Arial;font-size:2.6px;fill:#1a2733}</style>\n<g id="rooms">\n`;
+  for (const i of ord([...rs.keys()])) {
+    const r = rs[i];
+    const c = r.label || centroid(r.outline);
+    const a = area(r.outline);
+    const fs = a > 60 ? 2.1 : a > 25 ? 1.7 : 1.35;
+    s += `<g class="room t-${esc(r.type)}" id="${esc(r.id)}" data-name="${esc(r.name)}" data-type="${esc(r.type)}"><path d="M ${r.outline.map(p=>p[0].toFixed(2)+","+p[1].toFixed(2)).join(" L ")} Z"/><text x="${c[0].toFixed(2)}" y="${c[1].toFixed(2)}" font-size="${fs}">${esc(r.name)}</text></g>\n`;
+  }
+  s += `</g>\n<g id="markers">\n`;
+  for (const m of mks) {
+    s += `<g class="marker m-${esc(m.kind)}" data-kind="${esc(m.kind)}" data-name="${esc(m.name)}" transform="translate(${m.point[0]},${m.point[1]})"><circle class="disc" r="2.9"/><path class="glyph" d="${GLYPH[m.kind]}" transform="scale(.004375) translate(-480 480)"/></g>\n`;
+  }
+  s += `</g>\n<g id="legend" class="legend"><text x="${x+4}" y="${y+7}" font-size="3.6" font-weight="bold">NANYANG JUNIOR COLLEGE - STOREY ${f} PLAN</text>`;
+  s += `<text x="${x+4}" y="${y+11}" font-size="2.4">${esc((data.site && data.site.unit_mapping) || "")} - edited in NYJC Floor Plan Editor</text></g>\n`;
+  // nice scale bar: largest round length that fits in 80 drawing units
+  const barMetres = [100,50,20,10,5,2,1].find(m => m/SCALE <= 80) || 1;
+  const barLen = barMetres / SCALE;
+  s += `<g id="scale-bar"><path d="M${(x+4).toFixed(1)} ${(y+h-6).toFixed(1)}h${barLen.toFixed(1)}" stroke="#1a2733" stroke-width=".5"/><text x="${(x+4).toFixed(1)}" y="${(y+h-2.6).toFixed(1)}" font-size="2.4">0 - ${barMetres} m</text></g>\n`;
+  s += `</svg>\n`;
+  return s;
+}
+function exportJson() {
+  // sync computed geometry into metadata before export
+  for (const f of Object.keys(data.storeys)) {
+    for (const r of data.storeys[f].rooms) {
+      r.area_m2 = +(area(r.outline)*SCALE*SCALE).toFixed(1);
+      const [a,b] = bboxOf(r.outline);
+      r.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
+      const c = centroid(r.outline);
+      if (!r.label) r.centroid = [+c[0].toFixed(2), +c[1].toFixed(2)];
+    }
+  }
+  download("metadata.json", JSON.stringify(data, null, 1), "application/json");
+  status("metadata.json exported.");
+}
+
+/* ---------- wiring ---------- */
+function updateBtns() { $("bUndo").disabled = !history.length; $("bRedo").disabled = !future.length; }
+for (const t of TYPES) $("pType").add(new Option(t, t));
+for (const t of TYPES) $("dlgType").add(new Option(t, t));
+/* floating level selector (Google Maps style): highest storey at the top,
+   current one highlighted; switching keeps the viewport anchored */
+for (let f = 5; f >= 1; f--) {
+  const b = document.createElement("button");
+  b.textContent = f;
+  b.title = `Storey ${f}`;
+  b.onclick = () => { floor = f; sel = null; view = null; refresh(); markFloorBtn(); };
+  b.dataset.f = f;
+  $("levels").appendChild(b);
+}
+function markFloorBtn() { [...$("levels").children].forEach(b => b.classList.toggle("on", +b.dataset.f === floor)); }
+$("bSelect").onclick = () => setTool("select");
+$("bPoly").onclick = () => setTool("poly");
+$("bRect").onclick = () => setTool("rect");
+$("markerKind").onchange = () => { if ($("markerKind").value) { tool = "marker"; draft = null; $("hint").textContent = "Marker: click to place a " + $("markerKind").value + " marker."; } else setTool("select"); };
+$("bUndo").onclick = undo; $("bRedo").onclick = redo; $("bDelete").onclick = deleteSel;
+$("pName").oninput = () => { const r = selRoom(); if (r) { r.name = $("pName").value; refresh(true); } };
+$("pType").onchange = () => { const r = selRoom(); if (r) { r.type = $("pType").value; refresh(true); } };
+$("bAddVtxMode").onclick = () => status("Click a blue + handle on a room edge to insert a vertex there.");
+$("bDelVtx").onclick = () => { const r = selRoom(); if (r && sel.vtx != null && r.outline.length > 3) { snapshot(); r.outline.splice(sel.vtx,1); sel.vtx=null; save(); refresh(true); status("Vertex deleted."); } else status("Highlight a vertex first (click it).", "warn"); };
+$("bSvg").onclick = () => { download(`storey-${floor}.svg`, buildSvg(floor), "image/svg+xml"); status(`storey-${floor}.svg exported.`); };
+$("bJson").onclick = exportJson;
+$("bImport").onclick = () => $("fileJson").click();
+$("fileJson").onchange = ev => {
+  const file = ev.target.files[0]; if (!file) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      const d = JSON.parse(rd.result);
+      if (!d.storeys || !d.site) throw new Error("missing storeys/site");
+      snapshot(); data = d; floor = 1; view = null; refresh(); markFloorBtn(); save();
+      status("Imported " + file.name);
+    } catch (e) { status("Import failed: " + e.message, "bad"); }
+  };
+  rd.readAsText(file);
+};
+$("bReset").onclick = () => {
+  if (!confirm("Discard all edits and restore the original data?")) return;
+  localStorage.removeItem(LS_KEY);
+  history = []; future = []; load(); floor = 1; view = null; refresh(); markFloorBtn();
+  status("Reset to embedded data.");
+};
+$("cGrid").onchange = () => refresh(true);
+$("cBg").onchange = () => { bgEnabled = $("cBg").checked; refresh(true); };
+window.addEventListener("resize", () => refresh(true));
+
+/* ---------- boot ---------- */
+load();
+floor = 1;
+// scale panel from site metadata
+(() => {
+  const s = data.site || {};
+  $("scaleDrawing").textContent = s.source_scale || (SCALE === 1 ? "—" : `${(1/SCALE).toFixed(2)} units per m`);
+  $("scaleUnits").textContent = SCALE === 1 ? "1 unit = 1 m" : `1 unit = ${SCALE} m`;
+})();
+refresh();
+markFloorBtn();
+setTool("select");
+status(localStorage.getItem(LS_KEY) ? "Ready (loaded autosaved edits)." : "Ready.");
+</script>
+</body>
+</html>
