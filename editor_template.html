@@ -144,7 +144,6 @@
       <div class="kv">
         <b>Name</b><input type="text" id="pName">
         <b>Type</b><select id="pType"></select>
-        <b>Vertices</b><span id="pVerts">–</span>
       </div>
       <div id="vtxBtns" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
         <button id="bAddVtxMode" title="Next edge-click inserts a vertex">Insert vertex</button>
@@ -616,20 +615,18 @@ function updateProps() {
     const [uw, uh] = obbOf(r.outline);
     const w = (uw*SCALE).toFixed(1), d = (uh*SCALE).toFixed(1);
     const ar = (r.area_m2 != null ? r.area_m2 : area(r.outline)*SCALE*SCALE).toFixed(1);
-    ro.innerHTML = `<div>${r.name || "(unnamed room)"}</div>
-      <div class="big">${w} m × ${d} m</div><div>area ≈ ${ar} m² · ${r.outline.length} vertices</div>`;
+    ro.innerHTML = `<div class="big">${w} m × ${d} m</div><div>area ≈ ${ar} m² · ${(r.shape
+      ? (r.shape.kind === "rect"
+          ? `rot ${Math.round(r.shape.rot)}°`
+          : `R ${(r.shape.rOut*SCALE).toFixed(1)} m` + (r.shape.rIn ? ` / r ${(r.shape.rIn*SCALE).toFixed(1)} m` : "") + `, ${Math.round(sweepOf(r.shape))}° arc`)
+      : `${r.outline.length} vertices`)}</div>`;
     pr.style.display = "";
     $("pName").value = r.name; $("pType").value = r.type;
     if (r.shape) {
-      const s = r.shape;
-      $("pVerts").textContent = s.kind === "rect"
-        ? `rect ${(s.w*SCALE).toFixed(1)} × ${(s.h*SCALE).toFixed(1)} m, rot ${Math.round(s.rot)}°`
-        : `ring R ${(s.rOut*SCALE).toFixed(1)} m` + (s.rIn ? ` / r ${(s.rIn*SCALE).toFixed(1)} m` : "") + `, ${Math.round(sweepOf(s))}° arc`;
       $("vtxBtns").style.display = "none";
       $("cvtBtns").style.display = "none";
       $("shapeNote").style.display = "";
     } else {
-      $("pVerts").textContent = r.outline.length;
       $("vtxBtns").style.display = "";
       $("cvtBtns").style.display = "flex";
       $("shapeNote").style.display = "none";
