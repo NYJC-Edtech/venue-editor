@@ -52,7 +52,15 @@ Labs, Phy Labs, Large Capacity Venues, Meeting Rooms, Special Rooms, Recording
 Pods, Sports Facilities — plus plan-anatomy types (corridor, void, wc …) and the
 old slugs kept as a legacy group. The converter's `TYPE_RULES` emit the same
 vocabulary. The legend is drawn in screen-constant sizes — it does **not** change
-when you zoom — with small non-overlapping marker icons.
+when you zoom — with small non-overlapping marker icons, and it always paints
+**above** every shape (with `pointer-events: none`, so it never blocks clicks).
+
+**Switching storeys keeps the global zoom**: the viewport size and the position
+relative to the floor's background origin survive level changes (keys 1–5 or the
+floating selector). Parametric handles show rotation-aware cursors (corners/sides
+pick the nearest of the 8 resize cursors based on the shape's rotation; radius and
+arc nodes grab). **Ctrl+D** or the **Duplicate** button clones the selected room or
+marker with a fresh id, offset by 8 units.
 
 ## Parametric shapes (Inkscape-free venue editing)
 

@@ -114,6 +114,7 @@
   <div class="grp">
     <button id="bUndo" title="Undo (Ctrl+Z)">↶ Undo</button>
     <button id="bRedo" title="Redo (Ctrl+Y)">↷ Redo</button>
+    <button id="bDup" title="Duplicate selection (Ctrl+D)">⧉ Duplicate</button>
     <button id="bDelete" title="Delete selected (Del)">Delete</button>
   </div>
   <div class="grp">
@@ -170,6 +171,7 @@
       Enter / double-click — close polygon<br>
       Esc — cancel drawing<br>
       Del — delete selection<br>
+      Ctrl+D — duplicate selection<br>
       ← ↑ → ↓ — move selection (Alt fine · Shift big)<br>
       Ctrl+Z / Ctrl+Y — undo / redo<br>
       Alt+click vertex — delete it<br>
@@ -379,7 +381,6 @@ function refresh(keepView) {
     im.setAttribute("xlink:href", bg.href);
     stage.appendChild(im);
   }
-  renderLegend();
   const gR = el("g", {id:"rooms"});
   const sorted = [...roomsOf(floor)].map((r,i)=>({r,i})).sort((a,b)=>(ORD[a.r.type]??5)-(ORD[b.r.type]??5));
   for (const {r,i} of sorted) {
@@ -403,9 +404,11 @@ function refresh(keepView) {
   if (sel && sel.kind === "room") { if (roomsOf(floor)[sel.idx].shape) drawShapeHandles(); else drawVertexHandles(); }
   if (draft) drawDraft();
   if (document.getElementById("cGrid").checked) drawGrid();
+  renderLegend();   // last: legend + title stay above every shape
   document.getElementById("bUndo").disabled = !history.length;
   document.getElementById("bRedo").disabled = !future.length;
   document.getElementById("bDelete").disabled = !sel;
+  document.getElementById("bDup").disabled = !sel;
   updateScaleBar();
   const nR = roomsOf(floor).length, nM = marksOf(floor).length;
   document.getElementById("dataInfo").textContent =
@@ -440,21 +443,32 @@ function drawShapeHandles() {
     const e = el("text", {class:"shp-lbl", x, y, "font-size":view.w/95, "text-anchor":"middle", "stroke-width":view.w/700}, g);
     e.textContent = t;
   };
+  const resizeCursor = deg => {          // nearest of the 8 resize cursors
+    const a = ((deg % 180) + 180) % 180;
+    if (a < 22.5 || a >= 157.5) return "ew-resize";
+    if (a < 67.5) return "nesw-resize";
+    if (a < 112.5) return "ns-resize";
+    return "nwse-resize";
+  };
+  const angOf = (vx, vy) => Math.atan2(vy, vx) * DEG;
   if (s.kind === "rect") {
     const u = [Math.cos(s.rot*RAD), Math.sin(s.rot*RAD)], v = [-u[1], u[0]];
     const at = (a, b) => [s.c[0] + a*s.w/2*u[0] + b*s.h/2*v[0], s.c[1] + a*s.w/2*u[1] + b*s.h/2*v[1]];
     for (const [su, sv] of [[-1,-1],[1,-1],[1,1],[-1,1]]) {
       const p = at(su, sv);
-      el("rect", {class:"shp corner", x:p[0]-hr, y:p[1]-hr, width:2*hr, height:2*hr, "data-sh":"corner", "data-su":su, "data-sv":sv}, g);
+      const cur = resizeCursor(angOf(su*u[0] + sv*v[0], su*u[1] + sv*v[1]));
+      el("rect", {class:"shp corner", x:p[0]-hr, y:p[1]-hr, width:2*hr, height:2*hr, style:`cursor:${cur}`, "data-sh":"corner", "data-su":su, "data-sv":sv}, g);
     }
     for (const [a, b] of [[1,0],[-1,0],[0,1],[0,-1]]) {
       const p = at(a, b);
-      el("circle", {class:"shp side", cx:p[0], cy:p[1], r:hr, "data-sh":"side", "data-ax":a ? "w" : "h", "data-sg":a || b}, g);
+      const dir = a ? u : v, sgn = a || b;
+      const cur = resizeCursor(angOf(sgn*dir[0], sgn*dir[1]));
+      el("circle", {class:"shp side", cx:p[0], cy:p[1], r:hr, style:`cursor:${cur}`, "data-sh":"side", "data-ax":a ? "w" : "h", "data-sg":a || b}, g);
     }
     const top = at(0, -1), off = view.w/38;   // rotation node beyond the top edge
     const rp = [top[0] - v[0]*off, top[1] - v[1]*off];
     el("line", {class:"rot-line", x1:top[0], y1:top[1], x2:rp[0], y2:rp[1]}, g);
-    el("circle", {class:"shp rot", cx:rp[0], cy:rp[1], r:hr, "data-sh":"rot"}, g);
+    el("circle", {class:"shp rot", cx:rp[0], cy:rp[1], r:hr, style:"cursor:grab", "data-sh":"rot"}, g);
     lbl(rp[0] - v[0]*hr*2.6, rp[1] - v[1]*hr*2.6 + view.w/380, "rotate");
   } else {
     const sweep = sweepOf(s), mid = s.a0 + sweep/2;
@@ -464,19 +478,19 @@ function drawShapeHandles() {
       const d = Math.hypot(p[0]-s.c[0], p[1]-s.c[1]) || 1;
       lbl(p[0] + (p[0]-s.c[0])/d*hr*3.4, p[1] + (p[1]-s.c[1])/d*hr*3.4 + view.w/380, t);
     };
-    el("circle", {class:"shp center", cx:s.c[0], cy:s.c[1], r:hr, "data-sh":"center"}, g);
+    el("circle", {class:"shp center", cx:s.c[0], cy:s.c[1], r:hr, style:"cursor:move", "data-sh":"center"}, g);
     const pOut = P(mid, s.rOut);
-    el("circle", {class:"shp rout", cx:pOut[0], cy:pOut[1], r:hr, "data-sh":"rout"}, g);
+    el("circle", {class:"shp rout", cx:pOut[0], cy:pOut[1], r:hr, style:`cursor:${resizeCursor(angOf(pOut[0]-s.c[0], pOut[1]-s.c[1]))}`, "data-sh":"rout"}, g);
     outLbl(pOut, "outer");
     const pIn = P(s.rIn ? mid : mid - 90, s.rIn || s.rOut*0.35);
-    el("circle", {class:"shp rin", cx:pIn[0], cy:pIn[1], r:hr, "data-sh":"rin"}, g);
+    el("circle", {class:"shp rin", cx:pIn[0], cy:pIn[1], r:hr, style:`cursor:${resizeCursor(angOf(pIn[0]-s.c[0], pIn[1]-s.c[1]))}`, "data-sh":"rin"}, g);
     outLbl(pIn, "inner");
     const a0a = sweep >= 359.999 ? mid - 90 : s.a0;
     const a1a = sweep >= 359.999 ? mid + 90 : s.a0 + sweep;
     for (const [ang, which, t] of [[a0a, "a0", "start"], [a1a, "a1", "end"]]) {
       const p = P(ang, midR);
       el("rect", {class:"shp arc", x:p[0]-hr, y:p[1]-hr, width:2*hr, height:2*hr,
-                  transform:`rotate(45 ${p[0]} ${p[1]})`, "data-sh":which}, g);
+                  transform:`rotate(45 ${p[0]} ${p[1]})`, style:"cursor:grab", "data-sh":which}, g);
       outLbl(p, t);
     }
   }
@@ -524,7 +538,7 @@ function renderLegend() {
     ["sports-facility","Sports Facilities"],["canteen","Canteen"],["wc","Toilets"],
     ["stair-hall","Stair / lobby"],["corridor","Corridor"],["open-area","Open area"],["void","Void / roof"]];
   const panelH = (firstRow - panelTop) + items.length*rowH + MKINDS.length*rowH + u*10;
-  const g = el("g", {id:"legend", "font-family":"Arial", fill:"#dfe6f0"});
+  const g = el("g", {id:"legend", "font-family":"Arial", fill:"#dfe6f0", "pointer-events":"none"});
   el("rect", {x:lx - u*8, y:panelTop, width:u*250, height:panelH, rx:u*6,
               fill:"rgba(17,23,33,0.8)", stroke:"#3a4356", "stroke-width":u}, g);
   el("text", {x:lx, y:ty, "font-size":fsT, "font-weight":"bold"}, g).textContent =
@@ -725,6 +739,38 @@ function deleteSel() {
   sel = null; save(); refresh(true);
 }
 
+function duplicateSel() {
+  const r = selRoom(), m = selMark();
+  if (!r && !m) return;
+  snapshot();
+  const D = 8;   // offset so the copy is visible
+  if (r) {
+    const c = JSON.parse(JSON.stringify(r));
+    c.id = nextId(floor);
+    c.name = (r.name || "Room") + " copy";
+    if (c.shape) {
+      c.shape.c = [+(c.shape.c[0]+D).toFixed(2), +(c.shape.c[1]+D).toFixed(2)];
+      applyShape(c);
+    } else {
+      c.outline = c.outline.map(p => [+(p[0]+D).toFixed(2), +(p[1]+D).toFixed(2)]);
+      c.area_m2 = +(area(c.outline)*SCALE*SCALE).toFixed(1);
+      const [a, b] = bboxOf(c.outline);
+      c.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
+    }
+    if (c.label) c.label = [+(c.label[0]+D).toFixed(2), +(c.label[1]+D).toFixed(2)];
+    roomsOf(floor).push(c);
+    sel = { kind:"room", idx:roomsOf(floor).length-1 };
+    status(`Duplicated as "${c.name}".`);
+  } else {
+    const c = JSON.parse(JSON.stringify(m));
+    c.point = [+(c.point[0]+D).toFixed(2), +(c.point[1]+D).toFixed(2)];
+    marksOf(floor).push(c);
+    sel = { kind:"marker", idx:marksOf(floor).length-1 };
+    status("Marker duplicated.");
+  }
+  save(); refresh(true);
+}
+
 /* ---------- pointer interactions ---------- */
 stage.addEventListener("pointerdown", ev => {
   if (ev.button !== 0) return;
@@ -914,6 +960,7 @@ document.addEventListener("keydown", ev => {
   else if ((ev.key === "Delete" || ev.key === "Backspace") && sel) { ev.preventDefault(); deleteSel(); }
   else if ((ev.ctrlKey||ev.metaKey) && ev.key.toLowerCase() === "z" && !ev.shiftKey) { ev.preventDefault(); undo(); }
   else if ((ev.ctrlKey||ev.metaKey) && (ev.key.toLowerCase() === "y" || (ev.key.toLowerCase() === "z" && ev.shiftKey))) { ev.preventDefault(); redo(); }
+  else if ((ev.ctrlKey||ev.metaKey) && ev.key.toLowerCase() === "d") { ev.preventDefault(); duplicateSel(); }
   else if (ev.key.toLowerCase() === "v") setTool("select");
   else if (ev.key.toLowerCase() === "p") setTool("poly");
   else if (ev.key.toLowerCase() === "r") setTool("rect");
@@ -925,7 +972,7 @@ document.addEventListener("keydown", ev => {
     const dy = ev.key === "ArrowDown" ? step : ev.key === "ArrowUp" ? -step : 0;
     nudgeSel(dx, dy);
   }
-  else if (/^[1-5]$/.test(ev.key)) { floor = +ev.key; sel = null; view = null; refresh(); markFloorBtn(); }
+  else if (/^[1-5]$/.test(ev.key)) gotoFloor(+ev.key);
 });
 
 /* ---------- exports ---------- */
@@ -1012,12 +1059,28 @@ const fillTypeSelect = sel => {
 };
 fillTypeSelect($("pType"));
 /* floating level selector (Google Maps style): highest storey at the top,
-   current one highlighted; switching keeps the viewport anchored */
+   current one highlighted; switching keeps the global zoom and the same
+   position relative to the floor's background origin */
+const bgOrigin = f => {
+  const bg = data.storeys[f].background;
+  return bg ? [bg.x, bg.y] : [0, 0];
+};
+function gotoFloor(f) {
+  let keep = null;
+  if (view) {
+    const [ox, oy] = bgOrigin(floor);
+    keep = { w: view.w, h: view.h, dx: view.x - ox, dy: view.y - oy };
+  }
+  floor = f; sel = null; draft = null;
+  const [nx, ny] = bgOrigin(f);
+  view = keep ? { x: nx + keep.dx, y: ny + keep.dy, w: keep.w, h: keep.h } : null;
+  refresh(!!keep); markFloorBtn();   // keepView only when we have a preserved zoom
+}
 for (let f = 5; f >= 1; f--) {
   const b = document.createElement("button");
   b.textContent = f;
   b.title = `Storey ${f}`;
-  b.onclick = () => { floor = f; sel = null; view = null; refresh(); markFloorBtn(); };
+  b.onclick = () => gotoFloor(f);
   b.dataset.f = f;
   $("levels").appendChild(b);
 }
@@ -1046,6 +1109,7 @@ $("bToRing").onclick = () => {
 };
 $("markerKind").onchange = () => { if ($("markerKind").value) { tool = "marker"; draft = null; $("hint").textContent = "Marker: click to place a " + $("markerKind").value + " marker."; } else setTool("select"); };
 $("bUndo").onclick = undo; $("bRedo").onclick = redo; $("bDelete").onclick = deleteSel;
+$("bDup").onclick = duplicateSel;
 $("pName").oninput = () => { const r = selRoom(); if (r) { r.name = $("pName").value; refresh(true); } };
 $("pType").onchange = () => { const r = selRoom(); if (r) { r.type = $("pType").value; refresh(true); } };
 $("bAddVtxMode").onclick = () => status("Click a blue + handle on a room edge to insert a vertex there.");
