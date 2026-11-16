@@ -34,14 +34,42 @@ re-check the printed cross-checks).
 `editor.html` — single file, works offline from `file://`. Floating Google-Maps-style
 storey selector on the right edge of the map (keys **1–5** also work), the faded
 desaturated floor plan behind the venues (**plan** checkbox in the header hides it),
-draw/add/remove venues, drag labels, vertex editing, metre readout (min-area rect, so
-rotated rooms measure correctly), undo/redo, export SVG / export JSON / import JSON,
-localStorage autosave, **Reset** restores the converted data.
+draw/add/remove venues, drag labels, metre readout, undo/redo, export SVG /
+export JSON / import JSON, localStorage autosave, **Reset** restores the converted
+data.
 
 A live **scale bar** (bottom-right) picks a round distance (10 m, 20 m, 50 m …) that
 stays readable at the current zoom, and wheel-zooming briefly shows the **print
 ratio** (e.g. `1 : 740` — approximate, assumes a 96 dpi screen at 100 % browser
 zoom).
+
+## Parametric shapes (Inkscape-free venue editing)
+
+Rooms may carry a `shape` record — stored in metadata.json alongside the generated
+`outline`, so every existing consumer keeps working:
+
+- **Rectangle** `{kind:"rect", c, w, h, rot}` — centre, width, height, rotation in
+  degrees. On the map it gets corner nodes, side nodes and a green rotation node
+  (Shift-drag = 15° steps). The nodes rotate **with** the shape; dragging a side or
+  corner resizes along the rotated axes with the opposite edge/c corner anchored.
+- **Circle / donut** `{kind:"ring", c, rOut, rIn, a0, a1}` — centre, outer & inner
+  radius, arc start/end angles (degrees; 360 sweep = full). rIn 0 + full sweep is a
+  circle; partial sweep gives pie / annulus-sector shapes; holes render via two
+  subpaths.
+
+Draw with **+ Rect** (R) or **+ Circle** (C) — creation is interrupt-free: no dialog,
+the room appears immediately as "Room" (polygons likewise) and the Selection panel's
+name field is focused for an immediate rename; categorise via the Type dropdown only
+if you want the colour coding. Every node is labelled on-canvas (outer / inner /
+start / end / rotate) and shape-coded: corners are squares, side nodes dots, the
+inner-radius node a hollow ring, arc ends orange diamonds. The `outline` polygon and
+`area_m2` are regenerated from the parameters on every edit (analytic area, no
+shoelace approximation). Existing Inkscape-drawn polygon rooms can be migrated from
+the properties panel: **→ Rect** fits the minimum-area rectangle (rotation detected),
+**→ Circle** fits centre + mean radius. Parametric rooms show no vertex editing —
+that's deliberate ("no full path editing").
+
+Exported SVGs carry `data-shape='…'` on each parametric room for round-tripping.
 
 ## Icons
 
