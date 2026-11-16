@@ -739,6 +739,19 @@ function deleteSel() {
   sel = null; save(); refresh(true);
 }
 
+let panRaf = 0, panPending = null;
+function applyPan() {
+  panRaf = 0;
+  if (!drag || drag.type !== "pan" || !panPending) return;
+  const k = view.w / Math.max(1, stage.clientWidth);   // units per css px, fixed while zoom unchanged
+  view.x = drag.origView.x - (panPending[0] - drag.startClient[0]) * k;
+  view.y = drag.origView.y - (panPending[1] - drag.startClient[1]) * k;
+  panPending = null;
+  stage.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.h}`);
+  // legend is viewport-anchored: translate the existing group, don't rebuild it
+  const lg = document.getElementById("legend");
+  if (lg) lg.setAttribute("transform", `translate(${view.x - drag.origView.x} ${view.y - drag.origView.y})`);
+}
 function duplicateSel() {
   const r = selRoom(), m = selMark();
   if (!r && !m) return;
@@ -847,24 +860,21 @@ stage.addEventListener("pointerdown", ev => {
             origLabel:(r.label||centroid(r.outline)).slice(), snap:JSON.stringify(data), moved:false};
     return;
   }
-  // empty space: pan
-  drag = {type:"pan", start:[wx,wy], origView:{...view}};
+  // empty space: pan — driven by raw screen-pixel deltas (never re-samples the
+  // SVG transform mid-drag, which oscillates when the CTM is stale)
+  drag = {type:"pan", startClient:[ev.clientX, ev.clientY], origView:{...view}};
   if (sel) { sel = null; refresh(true); }
 });
 stage.addEventListener("pointermove", ev => {
   if (!drag) { if (draft) { const [wx,wy] = svgPoint(ev); draft.cur = [wx,wy]; refresh(true); } return; }
-  const [wx, wy] = svgPoint(ev);
   if (drag.type === "pan") {
-    view.x = drag.origView.x - (wx - drag.start[0]);
-    view.y = drag.origView.y - (wy - drag.start[1]);
-    // 1:1 pixel-matched pan: move the viewport only — no scene rebuild per event
-    stage.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.h}`);
-    const lg = document.getElementById("legend");
-    if (lg) lg.remove();
-    renderLegend();
-    updateScaleBar();
+    // coalesce to animation frames; exact 1:1: view shifts by the same number of
+    // screen px as the cursor (units-per-px is constant while the zoom is unchanged)
+    panPending = [ev.clientX, ev.clientY];
+    if (!panRaf) panRaf = requestAnimationFrame(applyPan);
     return;
   }
+  const [wx, wy] = svgPoint(ev);
   if (!drag.moved && Math.hypot(wx-drag.start[0], wy-drag.start[1]) > 0.3) drag.moved = true;
   if (drag.type === "shape") {
     const r = roomsOf(floor)[drag.idx], s = r.shape;
@@ -933,6 +943,7 @@ stage.addEventListener("pointermove", ev => {
 });
 stage.addEventListener("pointerup", () => {
   if (!drag) return;
+  if (drag.type === "pan") { if (panRaf) cancelAnimationFrame(panRaf); panRaf = 0; applyPan(); }
   if (drag.type !== "pan" && drag.moved) {
     const rr = roomsOf(floor)[drag.idx];
     if (rr && rr.shape) tidyShape(rr.shape);

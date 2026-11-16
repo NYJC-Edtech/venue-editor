@@ -41,8 +41,9 @@ data.
 A live **scale bar** (bottom-right) picks a round distance (10 m, 20 m, 50 m …) that
 stays readable at the current zoom, and wheel-zooming briefly shows the **print
 ratio** (e.g. `1 : 740` — approximate, assumes a 96 dpi screen at 100 % browser
-zoom). Panning is pixel-matched 1:1 (drag updates the viewport only — no scene
-rebuild per event). **← ↑ → ↓** nudge the selection by 1 unit (≈ 18.5 cm);
+zoom). Panning is pixel-matched 1:1: the drag is computed from raw screen-pixel
+deltas and coalesced to animation frames — the SVG transform is never re-sampled
+mid-drag (a stale CTM made the old pan oscillate) and nothing rebuilds per event. **← ↑ → ↓** nudge the selection by 1 unit (≈ 18.5 cm);
 **Alt+arrow** = fine (0.05 u), **Shift+arrow** = coarse (10 u); a burst of nudges is
 one undo step.
 
