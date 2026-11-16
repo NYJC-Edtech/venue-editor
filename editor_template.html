@@ -33,7 +33,7 @@
   #status{padding:5px 14px;background:var(--panel);border-top:1px solid var(--line);font-size:12px;color:#9fb0c8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   #status.warn{color:var(--warn)} #status.bad{color:var(--bad)}
   svg .room path{fill:#eef3f7;stroke:#37474f;stroke-width:.45}
-  svg .withbg .room path{fill-opacity:.82}
+  svg.withbg .room path{fill-opacity:.3}
   svg .planbg{filter:grayscale(1) invert(1) contrast(.92) opacity(.42)}
   svg .room text{font-family:Arial,sans-serif;fill:#1a2733;text-anchor:middle;pointer-events:none;user-select:none}
   svg .room.sel path{stroke:#ff2f2f;stroke-width:.9}
@@ -386,7 +386,14 @@ function refresh(keepView) {
   root.dataset.storey = floor;
   root.classList.toggle("tool-select", tool === "select");
   root.innerHTML = "";
-  // background floor plan (desaturated, inverted for the dark theme, faded)
+  /* display stack, top → bottom (invariant):
+     1. UI chrome (header / side panel / status bar — DOM, outside #wrap)
+     2. floating overlays: legend + title (drawn LAST here, pointer-events:none),
+        level selector, scale bar, hint — DOM floaters at z-index 6
+     3. map icons: markers, then the ◎ reference point, then editor handles/draft
+     4. location overlays: room shapes at 30% fill opacity (.withbg) so the plan
+        shows through; room labels stay full-strength for readability
+     5. base: grid, then the floor-plan image */
   const bg = data.storeys[floor].background;
   root.classList.toggle("withbg", !!(bg && bgEnabled));
   if (bg && bgEnabled) {
@@ -396,6 +403,7 @@ function refresh(keepView) {
     im.setAttribute("xlink:href", bg.href);
     stage.appendChild(im);
   }
+  if (document.getElementById("cGrid").checked) drawGrid();   // layer 5: under every shape
   const gR = el("g", {id:"rooms"});
   const u = view.w / Math.max(1, stage.clientWidth);   // svg units per screen px
   const sorted = [...roomsOf(floor)].map((r,i)=>({r,i})).sort((a,b)=>(ORD[a.r.type]??5)-(ORD[b.r.type]??5));
@@ -433,8 +441,7 @@ function refresh(keepView) {
   }
   if (sel && sel.kind === "room") { if (roomsOf(floor)[sel.idx].shape) drawShapeHandles(); else drawVertexHandles(); }
   if (draft) drawDraft();
-  if (document.getElementById("cGrid").checked) drawGrid();
-  renderLegend();   // last: legend + title stay above every shape
+  renderLegend();   // layer 2: drawn last, above every shape; pointer-events:none
   document.getElementById("bUndo").disabled = !history.length;
   document.getElementById("bRedo").disabled = !future.length;
   document.getElementById("bDelete").disabled = !sel;
