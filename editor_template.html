@@ -209,6 +209,8 @@ const LEGACY_TYPES = ["classroom","lab","lecture-theatre","hall","office",
   "sports-hall","computer-lab","music"];   // still referenced by saved venues;
 // library / study-area / av-room had no remaining users and were dropped
 const TYPES = [...VENUE_CATS.map(v => v[0]), ...STRUCTURAL.map(v => v[0]), ...LEGACY_TYPES];
+const TYPE_LABEL = Object.fromEntries([...VENUE_CATS, ...STRUCTURAL,
+  ...LEGACY_TYPES.map(t => [t, t]), ["none", "None"]]);   // slug → legend/tooltip label
 const MKINDS = ["restroom","stair","lift","entrance","exit"];
 /* Marker glyphs: Google Material Symbols (outlined, fill1), 24-unit grid,
    viewBox 0 -960 960 960, centred at (480,-480).
@@ -588,25 +590,24 @@ function renderLegend() {
   const fsT = u*13, fs = u*11.5, rowH = u*17;
   const lx = view.x + u*12, panelTop = view.y + u*8;
   const ty = panelTop + u*20, firstRow = ty + u*18;
-  const items = [["ac-classroom","AC Classrooms"],["non-ac-classroom","Non-AC Classrooms"],
-    ["science-lab","Science Labs"],["phy-lab","Phy Labs"],["computer-room","Computer Rooms"],
-    ["large-capacity","Large Capacity Venues"],["meeting-room","Meeting Rooms"],
-    ["special-room","Special Rooms"],["recording-pod","Recording Pods"],
-    ["sports-facility","Sports Facilities"],["canteen","Canteen"],["wc","Toilets"],
-    ["stair-hall","Stair / lobby"],["corridor","Corridor"],["open-area","Open area"],["void","Void / roof"]];
-  const panelH = (firstRow - panelTop) + items.length*rowH + MKINDS.length*rowH + u*10;
+  // only categories and marker kinds actually present on this floor, canonical order
+  const used = new Set(roomsOf(floor).map(r => r.type));
+  const items = [...VENUE_CATS.map(v => v[0]), ...STRUCTURAL.map(v => v[0]), ...LEGACY_TYPES].filter(t => used.has(t));
+  const kinds = MKINDS.filter(k => marksOf(floor).some(m => m.kind === k));
+  const panelH = (firstRow - panelTop) + items.length*rowH +
+                 (kinds.length ? u*5 + kinds.length*rowH : 0) + u*10;
   const g = el("g", {id:"legend", "font-family":"Arial", fill:"#dfe6f0", "pointer-events":"none"});
   el("rect", {x:lx - u*8, y:panelTop, width:u*250, height:panelH, rx:u*6,
               fill:"rgba(17,23,33,0.8)", stroke:"#3a4356", "stroke-width":u}, g);
   el("text", {x:lx, y:ty, "font-size":fsT, "font-weight":"bold"}, g).textContent =
     `NYJC — ${floor}${["ST","ND","RD"][floor-1]||"TH"} STOREY (editing view)`;
-  items.forEach(([t, lbl], i) => {
+  items.forEach((t, i) => {
     const yy = firstRow + i*rowH;
     el("rect", {x:lx, y:yy-fs*0.72, width:fs*1.4, height:fs*0.95, fill:FILL[t]||"#eef3f7", stroke:"#8a97a8", "stroke-width":u*0.8}, g);
-    el("text", {x:lx+fs*1.9, y:yy, "font-size":fs, fill:"#dfe6f0"}, g).textContent = lbl;
+    el("text", {x:lx+fs*1.9, y:yy, "font-size":fs, fill:"#dfe6f0"}, g).textContent = TYPE_LABEL[t] || t;
   });
   const my = firstRow + items.length*rowH + u*5;
-  MKINDS.forEach((k, i) => {
+  kinds.forEach((k, i) => {
     const gg = el("g", {class:"mk "+k, transform:`translate(${lx+u*7.5},${my+i*rowH+u*2})`}, g);
     markerGlyph(gg, k, u*7.5, u*10.5/960);          // 15 px disc inside a 17 px row
     el("text", {x:lx+u*19, y:my+i*rowH+u*6, "font-size":fs, fill:"#dfe6f0"}, g).textContent =
