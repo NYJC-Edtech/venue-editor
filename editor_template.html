@@ -251,8 +251,8 @@ function save() {
 const roomsOf = f => data.storeys[f].rooms;
 const marksOf = f => data.storeys[f].markers;
 function snapshot() { history.push(JSON.stringify(data)); if (history.length > 80) history.shift(); future.length = 0; updateBtns(); }
-function undo() { if (!history.length) return; future.push(JSON.stringify(data)); data = JSON.parse(history.pop()); sel = null; refresh(); save(); status("Undone"); }
-function redo() { if (!future.length) return; history.push(JSON.stringify(data)); data = JSON.parse(future.pop()); sel = null; refresh(); save(); status("Redone"); }
+function undo() { if (!history.length) return; future.push(JSON.stringify(data)); data = JSON.parse(history.pop()); sel = null; refresh(true); save(); status("Undone"); }
+function redo() { if (!future.length) return; history.push(JSON.stringify(data)); data = JSON.parse(future.pop()); sel = null; refresh(true); save(); status("Redone"); }
 
 /* ---------- geometry ---------- */
 const area = pts => { let s = 0; for (let i = 0; i < pts.length; i++) { const [x1,y1] = pts[i], [x2,y2] = pts[(i+1)%pts.length]; s += x1*y2 - x2*y1; } return Math.abs(s)/2; };
