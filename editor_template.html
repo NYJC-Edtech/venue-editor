@@ -203,8 +203,9 @@ const STRUCTURAL = [   // floor-plan anatomy, not bookable venues
   ["stair-hall","Stair / lobby"], ["stair","Staircase"], ["lift","Lift"],
   ["lobby","Entrance / foyer"], ["entrance","Entrance"], ["exit","Exit"], ["canteen","Canteen"],
 ];
-const LEGACY_TYPES = ["classroom","lab","lecture-theatre","hall","library","office",
-  "sports-hall","computer-lab","av-room","music","study-area"];
+const LEGACY_TYPES = ["classroom","lab","lecture-theatre","hall","office",
+  "sports-hall","computer-lab","music"];   // still referenced by saved venues;
+// library / study-area / av-room had no remaining users and were dropped
 const TYPES = [...VENUE_CATS.map(v => v[0]), ...STRUCTURAL.map(v => v[0]), ...LEGACY_TYPES];
 const MKINDS = ["restroom","stair","lift","entrance","exit"];
 /* Marker glyphs: Google Material Symbols (outlined, fill1), 24-unit grid,
