@@ -399,6 +399,18 @@ def main():
         total += len(st["rooms"])
         print(f"floor {i}: {len(st['rooms'])} venues")
 
+    # keep editor-marked alignment reference points across rebuilds (the SVG
+    # source has no notion of them; they live only in metadata.json)
+    try:
+        with open(args.out_data, encoding="utf-8") as f:
+            prev = json.load(f)
+        for fname, st in meta["storeys"].items():
+            old = prev.get("storeys", {}).get(fname, {}).get("ref")
+            if old:
+                st["ref"] = old
+    except (FileNotFoundError, json.JSONDecodeError, AttributeError):
+        pass
+
     with open(args.out_data, "w", encoding="utf-8") as f:
         json.dump(meta, f, ensure_ascii=False, separators=(",", ":"))
 

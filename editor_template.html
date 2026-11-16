@@ -110,6 +110,7 @@
       <option value="entrance">Entrance</option>
       <option value="exit">Exit</option>
     </select>
+    <button id="bRef" title="Mark this floor's alignment reference point (F) — pick the SAME physical spot (e.g. one stair-core corner) on every floor; switching floors then keeps your exact view">◎ Ref point</button>
   </div>
   <div class="grp">
     <button id="bUndo" title="Undo (Ctrl+Z)">↶ Undo</button>
@@ -167,6 +168,7 @@
     <div style="font-size:12px;color:#9fb0c8;line-height:1.7">
       V select · P polygon · R rect · C circle<br>
       1–5 — switch storey<br>
+      F — mark ref point (align floors)<br>
       Enter / double-click — close polygon<br>
       Esc — cancel drawing<br>
       Del — delete selection<br>
@@ -412,6 +414,23 @@ function refresh(keepView) {
     markerGlyph(g, m.kind, mR, mS);
   });
   stage.appendChild(gM);
+  // alignment reference point (editor-only, saved per floor in the data):
+  // every floor marks the same physical spot; level switches align on them.
+  // shown ONLY while the Ref point tool is active so it never blocks editing
+  const ref = tool === "ref" && data.storeys[floor].ref;
+  if (ref) {
+    const gF = el("g", {class:"refpt", transform:`translate(${ref[0]} ${ref[1]})`});
+    el("circle", {r:(9*u).toFixed(2), fill:"rgba(233,30,99,.16)", stroke:"#e91e63",
+      "stroke-width":(1.4*u).toFixed(2), "stroke-dasharray":`${(3.5*u).toFixed(2)} ${(2.2*u).toFixed(2)}`}, gF);
+    el("path", {d:`M ${(-13*u).toFixed(2)} 0 H ${(13*u).toFixed(2)} M 0 ${(-13*u).toFixed(2)} V ${(13*u).toFixed(2)}`,
+      stroke:"#e91e63", "stroke-width":(1.5*u).toFixed(2), fill:"none"}, gF);
+    el("circle", {r:(1.7*u).toFixed(2), fill:"#e91e63"}, gF);
+    const t = el("text", {y:(-15*u).toFixed(2), "font-size":(u*10.5).toFixed(2), "text-anchor":"middle",
+      fill:"#e91e63", stroke:"#0d131d", "stroke-width":(u*2.4).toFixed(2), "paint-order":"stroke",
+      "font-family":"Arial", "pointer-events":"none"}, gF);
+    t.textContent = "ref";
+    stage.appendChild(gF);
+  }
   if (sel && sel.kind === "room") { if (roomsOf(floor)[sel.idx].shape) drawShapeHandles(); else drawVertexHandles(); }
   if (draft) drawDraft();
   if (document.getElementById("cGrid").checked) drawGrid();
@@ -422,8 +441,11 @@ function refresh(keepView) {
   document.getElementById("bDup").disabled = !sel;
   updateScaleBar();
   const nR = roomsOf(floor).length, nM = marksOf(floor).length;
+  const sto = Object.keys(data.storeys);
+  const nRef = sto.filter(f => data.storeys[f].ref).length;
   document.getElementById("dataInfo").textContent =
-    `Floor ${floor}: ${nR} venues, ${nM} markers. Source: ${(data.site && data.site.source) || "embedded"}.` +
+    `Floor ${floor}: ${nR} venues, ${nM} markers. Source: ${(data.site && data.site.source) || "embedded"}.\n` +
+    `Reference points: ${nRef}/${sto.length} floors — level switches align on them.` +
     (localStorage.getItem(LS_KEY) ? "\nAutosaved edits loaded (Reset restores original)." : "\nOriginal data (unsaved edits go to localStorage).");
   updateProps();
 }
@@ -657,6 +679,7 @@ function setTool(t) {
   $("bPoly").classList.toggle("on", t==="poly");
   $("bRect").classList.toggle("on", t==="rect");
   $("bRing").classList.toggle("on", t==="ring");
+  $("bRef").classList.toggle("on", t==="ref");
   $("bSelect").classList.toggle("on", t==="select");
   $("markerKind").value = "";
   const hints = {
@@ -665,6 +688,7 @@ function setTool(t) {
     rect: "Rectangle: click two opposite corners — created right away, name it in the Selection panel.",
     ring: "Circle / donut: click the centre, then the rim — created right away. Then drag: outer, inner, arc start/end.",
     marker: `Marker: click to place a ${$ ? $("markerKind").value : ""} marker.`,
+    ref: "Ref point: click to mark this floor's alignment point — use the SAME physical spot (e.g. one stair-core corner) on every floor. Click again to re-place it.",
   };
   $("hint").textContent = hints[tool === "marker" ? "marker" : tool];
   refresh(true);
@@ -817,6 +841,13 @@ stage.addEventListener("pointerdown", ev => {
     marksOf(floor).push({kind, name: kind.charAt(0).toUpperCase()+kind.slice(1), point:[+wx.toFixed(2), +wy.toFixed(2)]});
     sel = {kind:"marker", idx:marksOf(floor).length-1};
     save(); refresh(true); status(kind + " marker placed.");
+    return;
+  }
+  if (tool === "ref") {
+    snapshot();
+    data.storeys[floor].ref = [+wx.toFixed(2), +wy.toFixed(2)];
+    save(); refresh(true);
+    status(`Floor ${floor} reference marked — mark the SAME physical spot on every floor.`);
     return;
   }
   if (vt) {
@@ -985,6 +1016,7 @@ document.addEventListener("keydown", ev => {
   else if (ev.key.toLowerCase() === "p") setTool("poly");
   else if (ev.key.toLowerCase() === "r") setTool("rect");
   else if (ev.key.toLowerCase() === "c") setTool("ring");
+  else if (ev.key.toLowerCase() === "f") setTool("ref");
   else if (/^Arrow/.test(ev.key) && sel) {
     ev.preventDefault();
     const step = ev.altKey ? 0.05 : ev.shiftKey ? 10 : 1;   // 1 unit ≈ 18.5 cm
@@ -1080,22 +1112,28 @@ const fillTypeSelect = sel => {
 };
 fillTypeSelect($("pType"));
 /* floating level selector (Google Maps style): highest storey at the top,
-   current one highlighted; switching keeps the global zoom and the same
-   position relative to the floor's background origin */
+   current one highlighted; switching keeps the global zoom and pins the same
+   physical spot under the cursor — floors are aligned on their ◎ reference
+   points (background corner is the fallback until every floor has one) */
 const bgOrigin = f => {
   const bg = data.storeys[f].background;
   return bg ? [bg.x, bg.y] : [0, 0];
 };
 function gotoFloor(f) {
-  let keep = null;
-  if (view) {
-    const [ox, oy] = bgOrigin(floor);
-    keep = { w: view.w, h: view.h, dx: view.x - ox, dy: view.y - oy };
-  }
+  const prev = floor;
+  const a = data.storeys[prev] && data.storeys[prev].ref, b = data.storeys[f].ref;
   floor = f; sel = null; draft = null;
-  const [nx, ny] = bgOrigin(f);
-  view = keep ? { x: nx + keep.dx, y: ny + keep.dy, w: keep.w, h: keep.h } : null;
-  refresh(!!keep); markFloorBtn();   // keepView only when we have a preserved zoom
+  if (!view) { refresh(); markFloorBtn(); return; }
+  /* invariant: zoom and plan position are both preserved — the point of the
+     building under the cursor stays under the cursor */
+  const [ax, ay] = a && b ? a : bgOrigin(prev);
+  const [bx, by] = a && b ? b : bgOrigin(f);
+  view = { x: bx + (view.x - ax), y: by + (view.y - ay), w: view.w, h: view.h };
+  refresh(true); markFloorBtn();
+  if (!(a && b)) {
+    const missing = a ? f : prev;
+    status(`Floor ${missing} has no ◎ reference point yet — view kept only approximately. Mark the same physical spot on every floor.`);
+  }
 }
 for (let f = 5; f >= 1; f--) {
   const b = document.createElement("button");
@@ -1110,6 +1148,7 @@ $("bSelect").onclick = () => setTool("select");
 $("bPoly").onclick = () => setTool("poly");
 $("bRect").onclick = () => setTool("rect");
 $("bRing").onclick = () => setTool("ring");
+$("bRef").onclick = () => setTool("ref");
 $("bToRect").onclick = () => {
   const r = selRoom(); if (!r || r.shape) return;
   snapshot();
