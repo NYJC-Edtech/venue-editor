@@ -46,6 +46,14 @@
   .t-store path{fill:#eceff1}.t-lobby path{fill:#f8f0e3}.t-sports-hall path{fill:#e2f7e2}
   .t-computer-lab path{fill:#e1f5fe}.t-av-room path{fill:#ede7f6}.t-music path{fill:#fce4ec}
   .t-study-area path{fill:#fff8e1}.t-stair path{fill:#e8e8e8}.t-lift path{fill:#dcedc8}.t-entrance path{fill:#e8f5e9}.t-exit path{fill:#ffebee}
+ .t-ac-classroom path{fill:#cfe3f7}.t-non-ac-classroom path{fill:#ddeefb}
+ .t-science-lab path{fill:#d9f2d9}.t-phy-lab path{fill:#e3f5e3}.t-computer-room path{fill:#e1f5fe}
+ .t-large-capacity path{fill:#fde9c8}.t-meeting-room path{fill:#ffe3ec}.t-special-room path{fill:#ede7f6}
+ .t-recording-pod path{fill:#fce4ec}.t-sports-facility path{fill:#e2f7e2}
+  .t-ac-classroom path{fill:#cfe3f7}.t-non-ac-classroom path{fill:#ddeefb}
+  .t-science-lab path{fill:#d9f2d9}.t-phy-lab path{fill:#e3f5e3}.t-computer-room path{fill:#e1f5fe}
+  .t-large-capacity path{fill:#fde9c8}.t-meeting-room path{fill:#ffe3ec}.t-special-room path{fill:#ede7f6}
+  .t-recording-pod path{fill:#fce4ec}.t-sports-facility path{fill:#e2f7e2}
   /* markers: white disc + coloured glyph (Google Material Symbols, Apache 2.0) */
   .mk .disc{fill:#fff;stroke-width:.35}
   .mk.restroom .disc{stroke:#00838f}.mk.restroom .glyph{fill:#00838f}
@@ -162,6 +170,7 @@
       Enter / double-click — close polygon<br>
       Esc — cancel drawing<br>
       Del — delete selection<br>
+      ← ↑ → ↓ — move selection (Alt fine · Shift big)<br>
       Ctrl+Z / Ctrl+Y — undo / redo<br>
       Alt+click vertex — delete it<br>
       Drag label — move room label<br>
@@ -178,9 +187,24 @@
 const EMBEDDED = /*__DATA__*/ null;
 const LS_KEY = "nyjc-floorplans-v1";
 
-const TYPES = ["room","classroom","lab","lecture-theatre","hall","canteen","library","office","wc",
-  "stair-hall","corridor","open-area","void","canopy","atrium","store","lobby","sports-hall",
-  "computer-lab","av-room","music","study-area","stair","lift","entrance","exit"];
+/* Location categories follow the venue enumeration
+   (nyxchange-timetable-v2/fixtures/venues.csv → venue_category). */
+const VENUE_CATS = [   // [slug, label] — canonical venue_category values
+  ["ac-classroom","AC Classrooms"], ["non-ac-classroom","Non-AC Classrooms"],
+  ["computer-room","Computer Rooms"], ["science-lab","Science Labs"], ["phy-lab","Phy Labs"],
+  ["large-capacity","Large Capacity Venues"], ["meeting-room","Meeting Rooms"],
+  ["special-room","Special Rooms"], ["recording-pod","Recording Pods"],
+  ["sports-facility","Sports Facilities"],
+];
+const STRUCTURAL = [   // floor-plan anatomy, not bookable venues
+  ["room","Room"], ["corridor","Corridor"], ["open-area","Open area"], ["void","Void / roof"],
+  ["canopy","Canopy"], ["atrium","Atrium"], ["store","Store"], ["wc","Toilets"],
+  ["stair-hall","Stair / lobby"], ["stair","Staircase"], ["lift","Lift"],
+  ["lobby","Entrance / foyer"], ["entrance","Entrance"], ["exit","Exit"], ["canteen","Canteen"],
+];
+const LEGACY_TYPES = ["classroom","lab","lecture-theatre","hall","library","office",
+  "sports-hall","computer-lab","av-room","music","study-area"];
+const TYPES = [...VENUE_CATS.map(v => v[0]), ...STRUCTURAL.map(v => v[0]), ...LEGACY_TYPES];
 const MKINDS = ["restroom","stair","lift","entrance","exit"];
 /* Marker glyphs: Google Material Symbols (outlined, fill1), 24-unit grid,
    viewBox 0 -960 960 960, centred at (480,-480).
@@ -193,12 +217,14 @@ const GLYPH = {
   entrance: "M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z",
   exit: "M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z",
 };
-const FILL = {room:"#eef3f7",classroom:"#cfe3f7",lab:"#d9f2d9","lecture-theatre":"#fde9c8",hall:"#f3d9f7",
-  canteen:"#fff2c9",library:"#d9e8ff",office:"#ffe3ec",wc:"#d9f7f7","stair-hall":"#e8e8e8",
+const FILL = {room:"#eef3f7","ac-classroom":"#cfe3f7","non-ac-classroom":"#ddeefb","lab":"#d9f2d9",
+  "science-lab":"#d9f2d9","phy-lab":"#e3f5e3","lecture-theatre":"#fde9c8","large-capacity":"#fde9c8",
+  hall:"#f3d9f7",canteen:"#fff2c9",library:"#d9e8ff",office:"#ffe3ec","meeting-room":"#ffe3ec",
+  wc:"#d9f7f7","stair-hall":"#e8e8e8","special-room":"#ede7f6","recording-pod":"#fce4ec",
   corridor:"#f5f5f0","open-area":"#fbfbf8",void:"#ffffff",canopy:"#f0f0f0",atrium:"#eef7ee",
-  store:"#eceff1",lobby:"#f8f0e3","sports-hall":"#e2f7e2","computer-lab":"#e1f5fe",
-  "av-room":"#ede7f6",music:"#fce4ec","study-area":"#fff8e1",stair:"#e8e8e8",lift:"#dcedc8",
-  entrance:"#e8f5e9",exit:"#ffebee"};
+  store:"#eceff1",lobby:"#f8f0e3","sports-hall":"#e2f7e2","sports-facility":"#e2f7e2",
+  "computer-lab":"#e1f5fe","computer-room":"#e1f5fe","av-room":"#ede7f6",music:"#fce4ec",
+  "study-area":"#fff8e1",stair:"#e8e8e8",lift:"#dcedc8",entrance:"#e8f5e9",exit:"#ffebee"};
 const ORD = {void:0,"open-area":1,canopy:2,corridor:3};
 
 /* metres per SVG user unit (from site metadata; 1 for unit-less data) */
@@ -368,7 +394,7 @@ function refresh(keepView) {
   stage.appendChild(gR);
   const gM = el("g", {id:"markers"});
   const u = view.w / Math.max(1, stage.clientWidth);   // svg units per screen px
-  const mR = 13.5*u, mS = 18*u/960;                    // constant on-screen size
+  const mR = 11*u, mS = 15*u/960;                      // ~22 px disc, constant on-screen size
   marksOf(floor).forEach((m,i) => {
     const g = el("g", {class:"mk "+m.kind+(sel&&sel.kind==="marker"&&sel.idx===i?" sel":""), transform:`translate(${m.point[0]},${m.point[1]})`, "data-i":i}, gM);
     markerGlyph(g, m.kind, mR, mS);
@@ -486,38 +512,36 @@ function drawGrid() {
   stage.appendChild(g);
 }
 function renderLegend() {
-  // docked overlay panel: enough headroom that the title's ascenders never clip,
-  // and a backing sheet so it stays readable over the faded plan
-  const pad = view.w * 0.02;
-  const fsT = view.w / 62;            // title font
-  const fs  = view.w / 75;            // item font
-  const rowH = fs * 1.5;
-  const lx = view.x + pad;
-  const panelTop = view.y + pad * 0.55;
-  const ty = panelTop + pad * 0.45 + fsT * 1.1;   // title baseline (ascenders stay inside)
-  const items = [["classroom","Classroom / tutorial"],["lab","Science lab"],["lecture-theatre","Lecture theatre"],
-    ["hall","Hall / stage"],["canteen","Canteen"],["library","Library"],["office","Office / staff"],
-    ["wc","Toilets"],["stair-hall","Stair / lobby"],["corridor","Corridor"],["open-area","Open area"],["void","Void / roof"]];
-  const subY = ty + fsT * 0.95;
-  const firstRow = subY + fs * 1.15;
-  const panelH = (firstRow - panelTop) + items.length * rowH + MKINDS.length * rowH + fs * 1.2;
+  // screen-constant sizes: u = svg units per css px, so u*N ≈ N px at any zoom
+  const u = view.w / Math.max(1, stage.clientWidth);
+  const fsT = u*13, fs = u*11.5, rowH = u*17;
+  const lx = view.x + u*12, panelTop = view.y + u*8;
+  const ty = panelTop + u*20, subY = ty + u*16, firstRow = subY + u*15;
+  const items = [["ac-classroom","AC Classrooms"],["non-ac-classroom","Non-AC Classrooms"],
+    ["science-lab","Science Labs"],["phy-lab","Phy Labs"],["computer-room","Computer Rooms"],
+    ["large-capacity","Large Capacity Venues"],["meeting-room","Meeting Rooms"],
+    ["special-room","Special Rooms"],["recording-pod","Recording Pods"],
+    ["sports-facility","Sports Facilities"],["canteen","Canteen"],["wc","Toilets"],
+    ["stair-hall","Stair / lobby"],["corridor","Corridor"],["open-area","Open area"],["void","Void / roof"]];
+  const panelH = (firstRow - panelTop) + items.length*rowH + MKINDS.length*rowH + u*10;
   const g = el("g", {id:"legend", "font-family":"Arial", fill:"#dfe6f0"});
-  el("rect", {x:lx - fs*0.7, y:panelTop, width:view.w * 0.19, height:panelH, rx:fs*0.35,
-              fill:"rgba(17,23,33,0.8)", stroke:"#3a4356", "stroke-width":view.w/1400}, g);
+  el("rect", {x:lx - u*8, y:panelTop, width:u*250, height:panelH, rx:u*6,
+              fill:"rgba(17,23,33,0.8)", stroke:"#3a4356", "stroke-width":u}, g);
   el("text", {x:lx, y:ty, "font-size":fsT, "font-weight":"bold"}, g).textContent =
-    `NANYANG JUNIOR COLLEGE — ${floor}${["ST","ND","RD"][floor-1]||"TH"} STOREY (editing view)`;
-  el("text", {x:lx, y:subY, "font-size":fs*0.95, fill:"#9fb0c8"}, g).textContent =
-    `${(data.site && data.site.unit_mapping || "").split(";")[0].trim()} · drawing scale ${((data.site&&data.site.source_scale)||"—")}`;
-  items.forEach(([t,lbl], i) => {
+    `NYJC — ${floor}${["ST","ND","RD"][floor-1]||"TH"} STOREY (editing view)`;
+  const um = (data.site && data.site.unit_mapping || "").match(/= ([\d.]+) m/);
+  el("text", {x:lx, y:subY, "font-size":fs, fill:"#9fb0c8"}, g).textContent =
+    `1 unit = ${um ? um[1] : SCALE} m · drawing scale ${((data.site&&data.site.source_scale)||"1:700").split("(")[0].trim()}`;
+  items.forEach(([t, lbl], i) => {
     const yy = firstRow + i*rowH;
-    el("rect", {x:lx, y:yy-fs*0.75, width:fs*1.9, height:fs*1.15, fill:FILL[t], stroke:"#8a97a8", "stroke-width":view.w/1600}, g);
-    el("text", {x:lx+fs*2.5, y:yy, fill:"#dfe6f0"}, g).textContent = lbl;
+    el("rect", {x:lx, y:yy-fs*0.72, width:fs*1.4, height:fs*0.95, fill:FILL[t]||"#eef3f7", stroke:"#8a97a8", "stroke-width":u*0.8}, g);
+    el("text", {x:lx+fs*1.9, y:yy, "font-size":fs, fill:"#dfe6f0"}, g).textContent = lbl;
   });
-  const my = firstRow + items.length*rowH + fs*0.45;
+  const my = firstRow + items.length*rowH + u*5;
   MKINDS.forEach((k, i) => {
-    const gg = el("g", {class:"mk "+k, transform:`translate(${lx+fs*1.1},${my+i*rowH})`}, g);
-    markerGlyph(gg, k, fs*1.05, fs*1.5/960);
-    el("text", {x:lx+fs*2.5, y:my+i*rowH+fs*0.15, fill:"#dfe6f0"}, g).textContent =
+    const gg = el("g", {class:"mk "+k, transform:`translate(${lx+u*7.5},${my+i*rowH+u*2})`}, g);
+    markerGlyph(gg, k, u*7.5, u*10.5/960);          // 15 px disc inside a 17 px row
+    el("text", {x:lx+u*19, y:my+i*rowH+u*6, "font-size":fs, fill:"#dfe6f0"}, g).textContent =
       {restroom:"Restroom", stair:"Staircase", lift:"Elevator", entrance:"Entrance", exit:"Exit"}[k];
   });
 }
@@ -657,11 +681,35 @@ function commitDraft() {
   }
   roomsOf(floor).push(r);
   sel = {kind:"room", idx:roomsOf(floor).length-1};
-  draft = null; save(); refresh(true);
+  draft = null; save(); setTool("select");          // handles (incl. rotate node) usable at once
   status("Room added — type its name in the Selection panel.");
   $("pName").focus(); $("pName").select();
 }
 function cancelDraft() { draft = null; refresh(true); setTool("select"); }
+let nudgeTimer = null;
+function nudgeSel(dx, dy) {
+  const r = selRoom(), m = selMark();
+  if (!r && !m) return;
+  if (!nudgeTimer) snapshot();               // one undo step per arrow-key burst
+  clearTimeout(nudgeTimer);
+  nudgeTimer = setTimeout(() => { nudgeTimer = null; }, 900);
+  if (r) {
+    if (r.shape) {
+      r.shape.c = [+(r.shape.c[0]+dx).toFixed(2), +(r.shape.c[1]+dy).toFixed(2)];
+      if (r.label) r.label = [+(r.label[0]+dx).toFixed(2), +(r.label[1]+dy).toFixed(2)];
+      applyShape(r);
+    } else {
+      r.outline = r.outline.map(p => [+(p[0]+dx).toFixed(2), +(p[1]+dy).toFixed(2)]);
+      if (r.label) r.label = [+(r.label[0]+dx).toFixed(2), +(r.label[1]+dy).toFixed(2)];
+      r.area_m2 = +(area(r.outline)*SCALE*SCALE).toFixed(1);
+      const [a, b] = bboxOf(r.outline);
+      r.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
+    }
+  } else {
+    m.point = [+(m.point[0]+dx).toFixed(2), +(m.point[1]+dy).toFixed(2)];
+  }
+  save(); refresh(true);
+}
 function deleteSel() {
   if (!sel) return;
   snapshot();
@@ -763,7 +811,13 @@ stage.addEventListener("pointermove", ev => {
   if (drag.type === "pan") {
     view.x = drag.origView.x - (wx - drag.start[0]);
     view.y = drag.origView.y - (wy - drag.start[1]);
-    refresh(true); return;
+    // 1:1 pixel-matched pan: move the viewport only — no scene rebuild per event
+    stage.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.h}`);
+    const lg = document.getElementById("legend");
+    if (lg) lg.remove();
+    renderLegend();
+    updateScaleBar();
+    return;
   }
   if (!drag.moved && Math.hypot(wx-drag.start[0], wy-drag.start[1]) > 0.3) drag.moved = true;
   if (drag.type === "shape") {
@@ -864,6 +918,13 @@ document.addEventListener("keydown", ev => {
   else if (ev.key.toLowerCase() === "p") setTool("poly");
   else if (ev.key.toLowerCase() === "r") setTool("rect");
   else if (ev.key.toLowerCase() === "c") setTool("ring");
+  else if (/^Arrow/.test(ev.key) && sel) {
+    ev.preventDefault();
+    const step = ev.altKey ? 0.05 : ev.shiftKey ? 10 : 1;   // 1 unit ≈ 18.5 cm
+    const dx = ev.key === "ArrowRight" ? step : ev.key === "ArrowLeft" ? -step : 0;
+    const dy = ev.key === "ArrowDown" ? step : ev.key === "ArrowUp" ? -step : 0;
+    nudgeSel(dx, dy);
+  }
   else if (/^[1-5]$/.test(ev.key)) { floor = +ev.key; sel = null; view = null; refresh(); markFloorBtn(); }
 });
 
@@ -940,7 +1001,16 @@ function exportJson() {
 
 /* ---------- wiring ---------- */
 function updateBtns() { $("bUndo").disabled = !history.length; $("bRedo").disabled = !future.length; }
-for (const t of TYPES) $("pType").add(new Option(t, t));
+const fillTypeSelect = sel => {
+  const g1 = document.createElement("optgroup"); g1.label = "Venue categories (venues.csv)";
+  for (const [s, l] of VENUE_CATS) g1.append(new Option(l, s));
+  const g2 = document.createElement("optgroup"); g2.label = "Plan anatomy";
+  for (const [s, l] of STRUCTURAL) g2.append(new Option(l, s));
+  const g3 = document.createElement("optgroup"); g3.label = "Legacy";
+  for (const t of LEGACY_TYPES) g3.append(new Option(t, t));
+  sel.append(g1, g2, g3);
+};
+fillTypeSelect($("pType"));
 /* floating level selector (Google Maps style): highest storey at the top,
    current one highlighted; switching keeps the viewport anchored */
 for (let f = 5; f >= 1; f--) {

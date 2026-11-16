@@ -23,27 +23,33 @@ NS = {"svg": "http://www.w3.org/2000/svg",
       "xlink": "http://www.w3.org/1999/xlink"}
 INV = {k: f"{{{v}}}" for k, v in NS.items()}
 
-# venue-type inference from labels (first match wins)
+# venue-type inference from labels (first match wins).
+# Slugs follow the venue enumeration in nyxchange-timetable-v2/fixtures/venues.csv
+# (venue_category): ac-classroom, non-ac-classroom, computer-room, science-lab,
+# phy-lab, large-capacity, meeting-room, special-room, recording-pod,
+# sports-facility. Structural plan types (wc, stair-hall, ...) are editor-only.
 TYPE_RULES = [
-    (r"lt\d|lecture theatre|ava",            "lecture-theatre"),
-    (r"chem lab|phy lab|bio lab|lab\b|robotics|science", "lab"),
-    (r"comp lab|itr\b|computer",             "computer-lab"),
+    (r"phy lab|physics lab",                 "phy-lab"),
+    (r"chem lab|bio lab|science|lab\b|robotics", "science-lab"),
+    (r"comp lab|itr\b|computer",             "computer-room"),
+    (r"recording|pod\b",                     "recording-pod"),
+    (r"lt\d|lecture theatre|ava",            "large-capacity"),
+    (r"hall\b|auditorium|mpr",               "large-capacity"),
     (r"canteen",                             "canteen"),
-    (r"hall\b|auditorium|mpr",               "hall"),
-    (r"library|reading",                     "library"),
-    (r"music|choir|guzheng|orchestra|band|dance|drama", "music"),
-    (r"gym|squash|sports|tennis|court|badminton|track", "sports-hall"),
+    (r"library|reading",                     "special-room"),
+    (r"music|choir|guzheng|orchestra|band|dance|drama", "special-room"),
+    (r"gym|squash|sports|tennis|court|badminton|track", "sports-facility"),
     (r"wc|toilet|washroom|bathroom|shower",  "wc"),
     (r"stair",                               "stair-hall"),
     (r"lift|elevator",                       "lift"),
     (r"entrance|entry|gate|foyer|lobby",     "lobby"),
     (r"exit|egress",                         "exit"),
-    (r"office|staff|hod|council|confab|workroom|alumni|clinic|first aid|counsell", "office"),
-    (r"atrium|courtyard|plaza|parade|field|track|playground|open|terrace|concourse|quad", "open-area"),
+    (r"office|staff|hod|council|confab|workroom|alumni|clinic|first aid|counsell", "meeting-room"),
+    (r"atrium|courtyard|plaza|parade|field|playground|open|terrace|concourse|quad", "open-area"),
     (r"store|storeroom|storage",             "store"),
-    (r"study|ispace|reading area",           "study-area"),
-    (r"art|craft|aep|studio|clep",           "classroom"),
-    (r"^\d+-\d+|classroom|tutorial|lecture room|cca|club|society", "classroom"),
+    (r"study|ispace|reading area",           "special-room"),
+    (r"art|craft|aep|studio|clep",           "special-room"),
+    (r"^\d+-\d+|classroom|tutorial|cca|club|society", "non-ac-classroom"),
 ]
 SKIP_LABELS = {"drum-template"}          # construction templates, not venues
 

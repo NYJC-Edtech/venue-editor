@@ -41,7 +41,18 @@ data.
 A live **scale bar** (bottom-right) picks a round distance (10 m, 20 m, 50 m …) that
 stays readable at the current zoom, and wheel-zooming briefly shows the **print
 ratio** (e.g. `1 : 740` — approximate, assumes a 96 dpi screen at 100 % browser
-zoom).
+zoom). Panning is pixel-matched 1:1 (drag updates the viewport only — no scene
+rebuild per event). **← ↑ → ↓** nudge the selection by 1 unit (≈ 18.5 cm);
+**Alt+arrow** = fine (0.05 u), **Shift+arrow** = coarse (10 u); a burst of nudges is
+one undo step.
+
+**Categories follow the venue enumeration** (`nyxchange-timetable-v2/fixtures/
+venues.csv` → `venue_category`): AC / Non-AC Classrooms, Computer Rooms, Science
+Labs, Phy Labs, Large Capacity Venues, Meeting Rooms, Special Rooms, Recording
+Pods, Sports Facilities — plus plan-anatomy types (corridor, void, wc …) and the
+old slugs kept as a legacy group. The converter's `TYPE_RULES` emit the same
+vocabulary. The legend is drawn in screen-constant sizes — it does **not** change
+when you zoom — with small non-overlapping marker icons.
 
 ## Parametric shapes (Inkscape-free venue editing)
 
