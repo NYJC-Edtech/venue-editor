@@ -360,12 +360,25 @@ function svgPoint(ev) {
 }
 
 /* ---------- rendering ---------- */
+function adjustAspect() {
+  /* viewport invariant: view.w/clientWidth == view.h/clientHeight, so the SVG
+     never letterboxes and units-per-screen-px is exactly view.w/clientWidth
+     (pan, scale bar, marker and label sizes all depend on it). */
+  if (!view) return;
+  const cw = stage.clientWidth, ch = stage.clientHeight;
+  if (!cw || !ch) return;
+  const target = cw/ch, cur = view.w/view.h;
+  if (Math.abs(cur-target)/target < 1e-9) return;
+  if (cur < target) { const nw = view.h*target; view.x -= (nw-view.w)/2; view.w = nw; }
+  else { const nh = view.w/target; view.y -= (nh-view.h)/2; view.h = nh; }
+}
 function refresh(keepView) {
   if (sel) {
     const ok = sel.kind === "room" ? !!roomsOf(floor)[sel.idx] : !!marksOf(floor)[sel.idx];
     if (!ok) sel = null;
   }
   if (!view || !keepView) view = {...extents(floor)};
+  adjustAspect();
   const root = document.getElementById("stage");
   root.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.h}`);
   root.dataset.storey = floor;

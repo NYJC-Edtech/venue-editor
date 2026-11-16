@@ -43,7 +43,11 @@ stays readable at the current zoom, and wheel-zooming briefly shows the **print
 ratio** (e.g. `1 : 740` — approximate, assumes a 96 dpi screen at 100 % browser
 zoom). Panning is pixel-matched 1:1: the drag is computed from raw screen-pixel
 deltas and coalesced to animation frames — the SVG transform is never re-sampled
-mid-drag (a stale CTM made the old pan oscillate) and nothing rebuilds per event. **← ↑ → ↓** nudge the selection by 1 unit (≈ 18.5 cm);
+mid-drag (a stale CTM made the old pan oscillate) and nothing rebuilds per event.
+The viewport is also aspect-locked (`view.w/clientWidth == view.h/clientHeight`
+enforced on every fit and resize), so the SVG never letterboxes: units-per-screen-
+px is exactly `view.w/clientWidth`, which pan, scale bar, marker and label sizing
+all rely on. **← ↑ → ↓** nudge the selection by 1 unit (≈ 18.5 cm);
 **Alt+arrow** = fine (0.05 u), **Shift+arrow** = coarse (10 u); a burst of nudges is
 one undo step.
 
