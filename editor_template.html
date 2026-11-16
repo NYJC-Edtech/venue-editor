@@ -382,19 +382,17 @@ function refresh(keepView) {
     stage.appendChild(im);
   }
   const gR = el("g", {id:"rooms"});
+  const u = view.w / Math.max(1, stage.clientWidth);   // svg units per screen px
   const sorted = [...roomsOf(floor)].map((r,i)=>({r,i})).sort((a,b)=>(ORD[a.r.type]??5)-(ORD[b.r.type]??5));
   for (const {r,i} of sorted) {
     const g = el("g", {class:"room t-"+r.type+(sel&&sel.kind==="room"&&sel.idx===i?" sel":""), "data-i":i}, gR);
     el("path", {d:roomD(r)}, g);
     const c = r.label || centroid(r.outline);
-    const aM2 = r.area_m2 != null ? r.area_m2 : area(r.outline)*SCALE*SCALE;
-    const fs = aM2 > 60 ? 2.1 : aM2 > 25 ? 1.7 : 1.35;
-    const t = el("text", {x:c[0].toFixed(2), y:c[1].toFixed(2), "font-size":fs, class:"lbl", "data-i":i}, g);
+    const t = el("text", {x:c[0].toFixed(2), y:c[1].toFixed(2), "font-size":(u*11.5).toFixed(2), class:"lbl", "data-i":i}, g);
     t.textContent = r.name;
   }
   stage.appendChild(gR);
   const gM = el("g", {id:"markers"});
-  const u = view.w / Math.max(1, stage.clientWidth);   // svg units per screen px
   const mR = 11*u, mS = 15*u/960;                      // ~22 px disc, constant on-screen size
   marksOf(floor).forEach((m,i) => {
     const g = el("g", {class:"mk "+m.kind+(sel&&sel.kind==="marker"&&sel.idx===i?" sel":""), transform:`translate(${m.point[0]},${m.point[1]})`, "data-i":i}, gM);
