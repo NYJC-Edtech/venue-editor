@@ -681,7 +681,7 @@ function commitDraft() {
     room = {outline: draft.pts.map(p => [+p[0].toFixed(2), +p[1].toFixed(2)])};
   }
   snapshot();
-  const r = {id:nextId(floor), name:"Room", type:"room", ...room};
+  const r = {id:nextId(floor), name:"Room", type:"none", ...room};
   if (r.shape) {
     applyShape(r);
     r.label = r.shape.kind === "rect" ? centroid(r.outline) : r.shape.c.slice();
@@ -1057,6 +1057,7 @@ function exportJson() {
 /* ---------- wiring ---------- */
 function updateBtns() { $("bUndo").disabled = !history.length; $("bRedo").disabled = !future.length; }
 const fillTypeSelect = sel => {
+  sel.append(new Option("None", "none"));   // default: uncategorised
   const g1 = document.createElement("optgroup"); g1.label = "Venue categories (venues.csv)";
   for (const [s, l] of VENUE_CATS) g1.append(new Option(l, s));
   const g2 = document.createElement("optgroup"); g2.label = "Plan anatomy";
