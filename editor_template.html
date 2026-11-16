@@ -84,7 +84,8 @@
   #levels button:last-child{border-bottom:0}
   #levels button:hover{background:#3d4d6b;color:var(--txt)}
   #levels button.on{background:var(--acc);color:#0d2137}
-  #scalebar{position:absolute;right:14px;bottom:12px;z-index:6;display:flex;align-items:center;gap:7px;pointer-events:none}
+  #scalebar{position:absolute;right:14px;bottom:12px;z-index:6;display:flex;flex-direction:column;align-items:flex-end;gap:2px;pointer-events:none}
+  #scalebar .srow{display:flex;align-items:center;gap:7px}
   #scalebar .bar{height:9px;border-left:2px solid #fff;border-right:2px solid #fff;position:relative;
                  filter:drop-shadow(0 1px 1.5px rgba(0,0,0,.7))}
   #scalebar .bar::after{content:"";position:absolute;left:0;right:0;top:50%;transform:translateY(-1px);height:2px;background:#fff}
@@ -135,7 +136,7 @@
     <svg id="stage" xmlns="http://www.w3.org/2000/svg"></svg>
     <div id="hint"></div>
     <div id="levels" title="Storey"></div>
-    <div id="scalebar"><div class="bar"></div><span id="scaleMetres">–</span></div>
+    <div id="scalebar"><span id="scaleNote">–</span><div class="srow"><div class="bar"></div><span id="scaleMetres">–</span></div></div>
     <div id="zoomrf" title="Approximate print scale (assumes a 96 dpi screen at 100% browser zoom)"></div>
   </div>
   <aside>
@@ -586,7 +587,7 @@ function renderLegend() {
   const u = view.w / Math.max(1, stage.clientWidth);
   const fsT = u*13, fs = u*11.5, rowH = u*17;
   const lx = view.x + u*12, panelTop = view.y + u*8;
-  const ty = panelTop + u*20, subY = ty + u*16, firstRow = subY + u*15;
+  const ty = panelTop + u*20, firstRow = ty + u*18;
   const items = [["ac-classroom","AC Classrooms"],["non-ac-classroom","Non-AC Classrooms"],
     ["science-lab","Science Labs"],["phy-lab","Phy Labs"],["computer-room","Computer Rooms"],
     ["large-capacity","Large Capacity Venues"],["meeting-room","Meeting Rooms"],
@@ -599,9 +600,6 @@ function renderLegend() {
               fill:"rgba(17,23,33,0.8)", stroke:"#3a4356", "stroke-width":u}, g);
   el("text", {x:lx, y:ty, "font-size":fsT, "font-weight":"bold"}, g).textContent =
     `NYJC — ${floor}${["ST","ND","RD"][floor-1]||"TH"} STOREY (editing view)`;
-  const um = (data.site && data.site.unit_mapping || "").match(/= ([\d.]+) m/);
-  el("text", {x:lx, y:subY, "font-size":fs, fill:"#9fb0c8"}, g).textContent =
-    `1 unit = ${um ? um[1] : SCALE} m · drawing scale ${((data.site&&data.site.source_scale)||"1:700").split("(")[0].trim()}`;
   items.forEach(([t, lbl], i) => {
     const yy = firstRow + i*rowH;
     el("rect", {x:lx, y:yy-fs*0.72, width:fs*1.4, height:fs*0.95, fill:FILL[t]||"#eef3f7", stroke:"#8a97a8", "stroke-width":u*0.8}, g);
@@ -628,6 +626,9 @@ function updateScaleBar() {
   for (const v of nice) if (v/mpp >= 55) { m = v; break; }   // first nice value with a ≥55 px bar
   document.querySelector("#scalebar .bar").style.width = Math.round(m/mpp) + "px";
   $("scaleMetres").textContent = m >= 1000 ? m/1000 + " km" : m + " m";
+  const um = (data.site && data.site.unit_mapping || "").match(/= ([\d.]+) m/);
+  $("scaleNote").textContent =
+    `1 unit = ${um ? um[1] : SCALE} m · drawing scale ${((data.site&&data.site.source_scale)||"1:700").split("(")[0].trim()}`;
 }
 let rfTimer = null;
 function showZoomRF() {
