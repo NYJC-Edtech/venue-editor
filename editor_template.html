@@ -35,7 +35,7 @@
   svg .room path{fill:#eef3f7;stroke:#37474f;stroke-width:.45}
   svg.withbg .room path{fill-opacity:.3}
   svg .planbg{filter:grayscale(1) invert(1) contrast(.92) opacity(.42)}
-  svg .room text{font-family:Arial,sans-serif;fill:#1a2733;text-anchor:middle;pointer-events:none;user-select:none}
+  svg .room text{font-family:Arial,sans-serif;fill:#1a2733;dominant-baseline:central;text-anchor:middle;pointer-events:none;user-select:none}
   svg .room.sel path{stroke:#ff2f2f;stroke-width:.9}
   svg .room.sel text{fill:#7a0000}
   .t-classroom path{fill:#cfe3f7}.t-lab path{fill:#d9f2d9}.t-lecture-theatre path{fill:#fde9c8}
@@ -176,7 +176,6 @@
       ← ↑ → ↓ — move selection (Alt fine · Shift big)<br>
       Ctrl+Z / Ctrl+Y — undo / redo<br>
       Alt+click vertex — delete it<br>
-      Drag label — move room label<br>
       Mouse wheel — zoom · drag empty — pan
     </div>
   </aside>
@@ -259,6 +258,15 @@ function redo() { if (!future.length) return; history.push(JSON.stringify(data))
 const area = pts => { let s = 0; for (let i = 0; i < pts.length; i++) { const [x1,y1] = pts[i], [x2,y2] = pts[(i+1)%pts.length]; s += x1*y2 - x2*y1; } return Math.abs(s)/2; };
 const bboxOf = pts => { let a=[1e9,1e9], b=[-1e9,-1e9]; for (const [x,y] of pts){ a[0]=Math.min(a[0],x); a[1]=Math.min(a[1],y); b[0]=Math.max(b[0],x); b[1]=Math.max(b[1],y);} return [a,b]; };
 const centroid = pts => { let x=0,y=0; for (const p of pts){x+=p[0];y+=p[1];} return [x/pts.length, y/pts.length]; };
+const areaCentroid = pts => {   // polygon area centroid (shoelace) — correct for rotated,
+  let a=0, cx=0, cy=0;          // concave and sector outlines where the vertex mean drifts
+  for (let i = 0; i < pts.length; i++) {
+    const [x1,y1] = pts[i], [x2,y2] = pts[(i+1)%pts.length];
+    const cross = x1*y2 - x2*y1;
+    a += cross; cx += (x1+x2)*cross; cy += (y1+y2)*cross;
+  }
+  return Math.abs(a) < 1e-9 ? centroid(pts) : [cx/(3*a), cy/(3*a)];
+};
 function extents(f) {
   const all = [...roomsOf(f).map(r=>r.outline).flat(), ...marksOf(f).map(m=>m.point)];
   const bg = data.storeys[f].background;
@@ -327,6 +335,14 @@ function tidyShape(s) {
   s.c = [+s.c[0].toFixed(2), +s.c[1].toFixed(2)];
   for (const k of ["w","h","rIn","rOut"]) if (s[k] != null) s[k] = +(+s[k]).toFixed(2);
   for (const k of ["rot","a0","a1"]) if (s[k] != null) s[k] = +norm360(+s[k]).toFixed(1);
+}
+function defaultLabelPos(r) {  /* label home: the outline's AREA centroid, centred on the text */
+  if (r.shape && r.shape.kind === "ring" && r.shape.rIn) {   // donut: outline loses the inner
+    const s = r.shape, sweep = sweepOf(s), mid = s.a0 + sweep/2;   // hole, so keep the band middle
+    const rad = (s.rOut + s.rIn)/2;
+    return [s.c[0] + rad*Math.cos(mid*RAD), s.c[1] + rad*Math.sin(mid*RAD)];
+  }
+  return areaCentroid(r.outline);
 }
 function roomD(r) { return r.shape ? shapeD(r.shape) : "M " + r.outline.map(p=>p[0].toFixed(2)+","+p[1].toFixed(2)).join(" L ") + " Z"; }
 function obbFull(pts) {                // min-area rect: centre, w, h, rotation
@@ -410,7 +426,7 @@ function refresh(keepView) {
   for (const {r,i} of sorted) {
     const g = el("g", {class:"room t-"+r.type+(sel&&sel.kind==="room"&&sel.idx===i?" sel":""), "data-i":i}, gR);
     el("path", {d:roomD(r)}, g);
-    const c = r.label || centroid(r.outline);
+    const c = defaultLabelPos(r);
     const t = el("text", {x:c[0].toFixed(2), y:c[1].toFixed(2), "font-size":(u*11.5).toFixed(2), class:"lbl", "data-i":i}, g);
     t.textContent = r.name;
   }
@@ -726,8 +742,7 @@ function commitDraft() {
   snapshot();
   const r = {id:nextId(floor), name:"Room", type:"none", ...room};
   if (r.shape) {
-    applyShape(r);
-    r.label = r.shape.kind === "rect" ? centroid(r.outline) : r.shape.c.slice();
+    applyShape(r);   // label stays parametric (defaultLabelPos) until first dragged
   } else {
     r.area_m2 = +(area(r.outline)*SCALE*SCALE).toFixed(1);
     const [a,b] = bboxOf(r.outline);
@@ -750,11 +765,9 @@ function nudgeSel(dx, dy) {
   if (r) {
     if (r.shape) {
       r.shape.c = [+(r.shape.c[0]+dx).toFixed(2), +(r.shape.c[1]+dy).toFixed(2)];
-      if (r.label) r.label = [+(r.label[0]+dx).toFixed(2), +(r.label[1]+dy).toFixed(2)];
       applyShape(r);
     } else {
       r.outline = r.outline.map(p => [+(p[0]+dx).toFixed(2), +(p[1]+dy).toFixed(2)]);
-      if (r.label) r.label = [+(r.label[0]+dx).toFixed(2), +(r.label[1]+dy).toFixed(2)];
       r.area_m2 = +(area(r.outline)*SCALE*SCALE).toFixed(1);
       const [a, b] = bboxOf(r.outline);
       r.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
@@ -829,7 +842,6 @@ stage.addEventListener("pointerdown", ev => {
   if (ev.button !== 0) return;
   const [wx, wy] = svgPoint(ev);
   const vt = ev.target.closest ? ev.target.closest(".vtx") : null;
-  const lbl = ev.target.closest ? ev.target.closest("text.lbl") : null;
   const mk = ev.target.closest ? ev.target.closest(".mk") : null;
   const rm = ev.target.closest ? ev.target.closest(".room") : null;
 
@@ -887,11 +899,6 @@ stage.addEventListener("pointerdown", ev => {
             start:[wx,wy], snap:JSON.stringify(data), moved:false};
     return;
   }
-  if (lbl && sel && sel.kind === "room" && +lbl.dataset.i === sel.idx) {
-    const r = selRoom();
-    drag = {type:"label", idx:sel.idx, start:[wx,wy], orig:(r.label||centroid(r.outline)).slice(), snap:JSON.stringify(data), moved:false};
-    return;
-  }
   if (mk) {
     sel = {kind:"marker", idx:+mk.dataset.i, vtx:null};
     drag = {type:"marker", idx:sel.idx, start:[wx,wy], orig:marksOf(floor)[sel.idx].point.slice(), snap:JSON.stringify(data), moved:false};
@@ -904,7 +911,7 @@ stage.addEventListener("pointerdown", ev => {
     const r = roomsOf(floor)[i];
     drag = {type:"room", idx:i, start:[wx,wy],
             orig:r.outline.map(p=>p.slice()), origC:r.shape ? r.shape.c.slice() : null,
-            origLabel:(r.label||centroid(r.outline)).slice(), snap:JSON.stringify(data), moved:false};
+            snap:JSON.stringify(data), moved:false};
     return;
   }
   // empty space: pan — driven by raw screen-pixel deltas (never re-samples the
@@ -955,9 +962,7 @@ stage.addEventListener("pointermove", ev => {
     } else {
       const k = drag.h.k, d0 = Math.hypot(wx - s.c[0], wy - s.c[1]);
       if (k === "center") {
-        const dx = wx - s.c[0], dy = wy - s.c[1];
         s.c = [+wx.toFixed(2), +wy.toFixed(2)];
-        if (r.label) r.label = [+(r.label[0]+dx).toFixed(2), +(r.label[1]+dy).toFixed(2)];
       }
       else if (k === "rout") s.rOut = +Math.max(d0, (s.rIn || 0) + 0.5, 0.5).toFixed(2);
       else if (k === "rin") s.rIn = +Math.min(d0, s.rOut - 0.5).toFixed(2);
@@ -974,15 +979,10 @@ stage.addEventListener("pointermove", ev => {
     const dx = wx - drag.start[0], dy = wy - drag.start[1];
     if (r.shape) {
       r.shape.c = [+(drag.origC[0]+dx).toFixed(2), +(drag.origC[1]+dy).toFixed(2)];
-      r.label = [+(drag.origLabel[0]+dx).toFixed(2), +(drag.origLabel[1]+dy).toFixed(2)];
       applyShape(r);
     } else {
       r.outline = drag.orig.map(p => [+(p[0]+dx).toFixed(2), +(p[1]+dy).toFixed(2)]);
-      r.label = [+(drag.origLabel[0]+dx).toFixed(2), +(drag.origLabel[1]+dy).toFixed(2)];
     }
-  } else if (drag.type === "label") {
-    const r = roomsOf(floor)[drag.idx];
-    r.label = [+(drag.orig[0]+wx-drag.start[0]).toFixed(2), +(drag.orig[1]+wy-drag.start[1]).toFixed(2)];
   } else if (drag.type === "marker") {
     marksOf(floor)[drag.idx].point = [+wx.toFixed(2), +wy.toFixed(2)];
   }
@@ -1069,10 +1069,10 @@ function buildSvg(f) {
  .legend{font-family:Arial;font-size:2.6px;fill:#1a2733}</style>\n<g id="rooms">\n`;
   for (const i of ord([...rs.keys()])) {
     const r = rs[i];
-    const c = r.label || centroid(r.outline);
+    const c = defaultLabelPos(r);
     const a = area(r.outline);
     const fs = a > 60 ? 2.1 : a > 25 ? 1.7 : 1.35;
-    s += `<g class="room t-${esc(r.type)}" id="${esc(r.id)}" data-name="${esc(r.name)}" data-type="${esc(r.type)}"${r.shape ? ` data-shape='${esc(JSON.stringify(r.shape))}'` : ""}><path d="${roomD(r)}"/><text x="${c[0].toFixed(2)}" y="${c[1].toFixed(2)}" font-size="${fs}">${esc(r.name)}</text></g>\n`;
+    s += `<g class="room t-${esc(r.type)}" id="${esc(r.id)}" data-name="${esc(r.name)}" data-type="${esc(r.type)}"${r.shape ? ` data-shape='${esc(JSON.stringify(r.shape))}'` : ""}><path d="${roomD(r)}"/><text x="${c[0].toFixed(2)}" y="${c[1].toFixed(2)}" font-size="${fs}" dominant-baseline="central">${esc(r.name)}</text></g>\n`;
   }
   s += `</g>\n<g id="markers">\n`;
   for (const m of mks) {
@@ -1097,8 +1097,7 @@ function exportJson() {
         const [a,b] = bboxOf(r.outline);
         r.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
       }
-      const c = centroid(r.outline);
-      if (!r.label) r.centroid = r.shape ? r.shape.c.slice() : [+c[0].toFixed(2), +c[1].toFixed(2)];
+      r.centroid = defaultLabelPos(r).map(v => +v.toFixed(2));   // label position: band middle for donuts, else area centroid
     }
   }
   download("metadata.json", JSON.stringify(data, null, 1), "application/json");
