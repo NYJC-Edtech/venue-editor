@@ -39,8 +39,8 @@ TYPE_RULES = [
     (r"library|reading",                     "special-room"),
     (r"music|choir|guzheng|orchestra|band|dance|drama", "special-room"),
     (r"gym|squash|sports|tennis|court|badminton|track", "sports-facility"),
-    (r"wc|toilet|washroom|bathroom|shower",  "wc"),
-    (r"stair",                               "stair-hall"),
+    (r"wc|toilet|washroom|bathroom|shower|restroom",  "restroom"),
+    (r"stair",                               "stair"),
     (r"lift|elevator",                       "lift"),
     (r"entrance|entry|gate|foyer|lobby",     "lobby"),
     (r"exit|egress",                         "exit"),
@@ -399,15 +399,35 @@ def main():
         total += len(st["rooms"])
         print(f"floor {i}: {len(st['rooms'])} venues")
 
-    # keep editor-marked alignment reference points across rebuilds (the SVG
-    # source has no notion of them; they live only in metadata.json)
+    # keep editor-created data across rebuilds (the SVG source has no notion of
+    # them; they live only in metadata.json): ◎ reference points, staircase runs,
+    # shape groups, and per-room editor fields (parametric `shape`, multi-level
+    # `height`). Groups reference members by id; members whose shapes the rebuild
+    # dropped (e.g. markers, which are not imported) are pruned by the editor's
+    # repair pass on next load.
     try:
         with open(args.out_data, encoding="utf-8") as f:
             prev = json.load(f)
+        prev_storeys = prev.get("storeys", {})
         for fname, st in meta["storeys"].items():
-            old = prev.get("storeys", {}).get(fname, {}).get("ref")
-            if old:
-                st["ref"] = old
+            old = prev_storeys.get(fname, {})
+            if old.get("ref"):
+                st["ref"] = old["ref"]
+            if old.get("staircases"):
+                st["staircases"] = old["staircases"]
+            if old.get("groups"):
+                st["groups"] = old["groups"]
+            prev_rooms = {r.get("id"): r for r in old.get("rooms", []) if r.get("id")}
+            for r in st["rooms"]:
+                pr = prev_rooms.get(r["id"])
+                if not pr:
+                    continue
+                if pr.get("height"):
+                    r["height"] = pr["height"]
+                # keep the parametric shape only while the SVG outline is unchanged —
+                # an Inkscape-side geometry edit must win over the stale shape
+                if pr.get("shape") and pr.get("outline") == r["outline"]:
+                    r["shape"] = pr["shape"]
     except (FileNotFoundError, json.JSONDecodeError, AttributeError):
         pass
 

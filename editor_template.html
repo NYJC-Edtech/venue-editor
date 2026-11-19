@@ -27,6 +27,8 @@
   .kv{display:grid;grid-template-columns:88px 1fr;gap:3px 8px;font-size:12.5px}
   .kv b{color:#9fb0c8;font-weight:500}
   .kv input,.kv select{width:100%;padding:3px 6px}
+  .tpnote{font-size:12px;color:#9fb0c8;line-height:1.55}
+  .tpnote b{color:var(--txt)}
   #readout{background:#1b2130;border:1px solid var(--line);border-radius:6px;padding:8px 10px;font-size:12.5px}
   #readout .big{font-size:16px;font-weight:600;color:var(--acc)}
   #hint{position:absolute;left:12px;bottom:12px;background:rgba(20,26,38,.88);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:12px;color:#aebdcd;max-width:520px}
@@ -36,32 +38,33 @@
   svg.withbg .room path{fill-opacity:.3}
   svg .planbg{filter:grayscale(1) invert(1) contrast(.92) opacity(.42)}
   svg .room text{font-family:Arial,sans-serif;fill:#fff;stroke:#141a24;stroke-width:.28;paint-order:stroke;dominant-baseline:central;text-anchor:middle;pointer-events:none;user-select:none}
-  svg .room.sel path{stroke:#ff2f2f;stroke-width:.9}
-  svg .room.sel text{fill:#ff5c5c}
-  .t-classroom path{fill:#cfe3f7}.t-lab path{fill:#d9f2d9}.t-lecture-theatre path{fill:#fde9c8}
-  .t-hall path{fill:#f3d9f7}.t-canteen path{fill:#fff2c9}.t-library path{fill:#d9e8ff}
-  .t-office path{fill:#ffe3ec}.t-wc path{fill:#d9f7f7}.t-stair-hall path{fill:#e8e8e8}
+  svg .room.sel path{stroke:#4da3ff;stroke-width:.9}
+  svg .room.sel text{fill:#9ecdff}
+  .t-canteen path{fill:#fff2c9}.t-stair-hall path{fill:#e8e8e8}
   .t-corridor path{fill:#f5f5f0}.t-open-area path{fill:#fbfbf8}.t-void path{fill:#fff;stroke:#90a4ae;stroke-dasharray:2 1.2}
   .t-canopy path{fill:#f0f0f0;stroke:#90a4ae;stroke-dasharray:3 1.5}.t-atrium path{fill:#eef7ee;stroke:#558b2f}
-  .t-store path{fill:#eceff1}.t-lobby path{fill:#f8f0e3}.t-sports-hall path{fill:#e2f7e2}
-  .t-computer-lab path{fill:#e1f5fe}.t-av-room path{fill:#ede7f6}.t-music path{fill:#fce4ec}
-  .t-study-area path{fill:#fff8e1}.t-stair path{fill:#e8e8e8}.t-lift path{fill:#dcedc8}.t-entrance path{fill:#e8f5e9}.t-exit path{fill:#ffebee}
+  .t-store path{fill:#eceff1}.t-lobby path{fill:#f8f0e3}
+  .t-lift path{fill:#dcedc8}.t-entrance path{fill:#e8f5e9}.t-exit path{fill:#ffebee}
  .t-ac-classroom path{fill:#cfe3f7}.t-non-ac-classroom path{fill:#ddeefb}
  .t-science-lab path{fill:#d9f2d9}.t-phy-lab path{fill:#e3f5e3}.t-computer-room path{fill:#e1f5fe}
  .t-large-capacity path{fill:#fde9c8}.t-meeting-room path{fill:#ffe3ec}.t-special-room path{fill:#ede7f6}
  .t-recording-pod path{fill:#fce4ec}.t-sports-facility path{fill:#e2f7e2}
-  .t-ac-classroom path{fill:#cfe3f7}.t-non-ac-classroom path{fill:#ddeefb}
-  .t-science-lab path{fill:#d9f2d9}.t-phy-lab path{fill:#e3f5e3}.t-computer-room path{fill:#e1f5fe}
-  .t-large-capacity path{fill:#fde9c8}.t-meeting-room path{fill:#ffe3ec}.t-special-room path{fill:#ede7f6}
-  .t-recording-pod path{fill:#fce4ec}.t-sports-facility path{fill:#e2f7e2}
   /* markers: white disc + coloured glyph (Google Material Symbols, Apache 2.0) */
   .mk .disc{fill:#fff;stroke-width:.35}
   .mk.restroom .disc{stroke:#00838f}.mk.restroom .glyph{fill:#00838f}
   .mk.stair .disc{stroke:#5d4037}.mk.stair .glyph{fill:#5d4037}
   .mk.entrance .disc{stroke:#2e7d32}.mk.entrance .glyph{fill:#2e7d32}
-  .mk.exit .disc{stroke:#c62828}.mk.exit .glyph{fill:#c62828}
   .mk.lift .disc{stroke:#558b2f}.mk.lift .glyph{fill:#558b2f}
-  .mk.sel .disc{stroke:#ff2f2f;stroke-width:.55}
+  .mk.sel .disc{stroke:#4da3ff;stroke-width:.55}
+  /* staircases: a run LINE spanning two adjacent floors + access-point icons
+     (white disc + stair glyph + a "↑3 / ↓1" badge naming the other floor) */
+  svg .stair .casing{fill:none;stroke:#fff;stroke-width:2.4;opacity:.8;stroke-linecap:round;stroke-linejoin:round}
+  svg .stair .run{fill:none;stroke:#5d4037;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+  svg .stair .hit{fill:none;stroke:#000;stroke-opacity:0;stroke-width:6;pointer-events:stroke;cursor:move}
+  svg .stair.sel .run{stroke:var(--acc);stroke-width:1.5}
+  svg .stair.bad .run{stroke:#ff2f2f}
+  svg .stair.bad .halo{fill:none;stroke:rgba(255,60,60,.35);stroke-width:7;stroke-linecap:round;pointer-events:none}
+  .stairacc .badge{font-family:Arial;fill:#fff;stroke:#141a24;stroke-width:.3;paint-order:stroke;text-anchor:middle;pointer-events:none;user-select:none}
   .vtx{fill:#ffb020;stroke:#7a5200;stroke-width:.3;cursor:move}
   .vtx.new{fill:#4da3ff;cursor:copy}
   .shp{cursor:move}
@@ -72,9 +75,10 @@
   .shp.rout{fill:#ffb020;stroke:#7a5200;stroke-width:.3}
   .shp.rin{fill:#141a24;stroke:#ffb020;stroke-width:.5}
   .shp.arc{fill:#ff8a65;stroke:#7a3300;stroke-width:.3}
+  .gbbox{fill:rgba(77,163,255,.06);stroke:#4da3ff;stroke-width:.6;stroke-dasharray:3 2;pointer-events:none}
   .shp-lbl{fill:#e8f0f8;stroke:#0d131d;paint-order:stroke;pointer-events:none;font-family:Arial}
   .rot-line{stroke:#66bb6a;stroke-width:.3;stroke-dasharray:1.5 1}
-  .draw-preview{fill:none;stroke:#ff2f2f;stroke-width:.6;stroke-dasharray:2 1.4}
+  .draw-preview{fill:none;stroke:#4da3ff;stroke-width:.6;stroke-dasharray:2 1.4}
   /* floating overlays on the map (Google Maps style) */
   #levels{position:absolute;right:12px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;
           background:rgba(27,33,48,.93);border:1px solid var(--line);border-radius:9px;overflow:hidden;
@@ -93,6 +97,14 @@
   #zoomrf{position:absolute;right:14px;bottom:44px;z-index:6;background:rgba(27,33,48,.92);border:1px solid var(--line);
           border-radius:6px;padding:3px 9px;font-size:12px;color:var(--txt);opacity:0;transition:opacity .5s;pointer-events:none}
   #zoomrf.show{opacity:1}
+  #settings{position:absolute;right:12px;top:12px;z-index:7;background:rgba(27,33,48,.95);border:1px solid var(--line);
+           border-radius:8px;padding:10px 12px;font-size:12px;display:none;flex-direction:column;gap:8px;
+           box-shadow:0 2px 10px rgba(0,0,0,.35)}
+  #settings.open{display:flex}
+  #settings b{font-size:11px;color:#9fb0c8;text-transform:uppercase;letter-spacing:.06em}
+  #settings label{display:flex;align-items:center;gap:6px;cursor:pointer}
+  #settings input[type=range]{width:110px}
+  #snapmark circle{pointer-events:none}
 </style>
 </head>
 <body>
@@ -100,17 +112,9 @@
   <h1>NYJC Floor Plans</h1>
   <div class="grp">
     <button id="bSelect" class="on" title="Select / move (V)">Select</button>
-    <button id="bPoly" title="Draw polygon room (P)">+ Polygon</button>
-    <button id="bRect" title="Draw rectangular room (R) — creates an editable rect shape">+ Rect</button>
-    <button id="bRing" title="Draw circle / donut (C) — click centre, then rim">+ Circle</button>
-    <select id="markerKind" title="Marker kind to place">
-      <option value="">+ Marker…</option>
-      <option value="restroom">Restroom</option>
-      <option value="stair">Staircase</option>
-      <option value="lift">Elevator / lift</option>
-      <option value="entrance">Entrance</option>
-      <option value="exit">Exit</option>
-    </select>
+    <button id="bStair" title="Staircase tool (S) — draw the stair run and set its lower / upper access points">+ Staircase</button>
+    <button id="bRoom" title="Room tool — Rect (R) or Circle / Donut (C)">+ Room</button>
+    <button id="bMarker" title="Marker tool (M) — entrance / elevator icons">+ Marker</button>
     <button id="bRef" title="Mark this floor's alignment reference point (F) — pick the SAME physical spot (e.g. one stair-core corner) on every floor; switching floors then keeps your exact view">◎ Ref point</button>
   </div>
   <div class="grp">
@@ -118,6 +122,8 @@
     <button id="bRedo" title="Redo (Ctrl+Y)">↷ Redo</button>
     <button id="bDup" title="Duplicate selection (Ctrl+D)">⧉ Duplicate</button>
     <button id="bDelete" title="Delete selected (Del)">Delete</button>
+    <button id="bGroup" title="Group the selected shapes (Ctrl+G) — grouping a shape with a group adds the shape to that group">Group</button>
+    <button id="bUngroup" title="Dissolve the selected group (Ctrl+Shift+G)">Ungroup</button>
   </div>
   <div class="grp">
     <button id="bSvg" title="Download this storey as SVG">Export SVG</button>
@@ -129,31 +135,90 @@
   <div class="grp">
     <label class="tgl"><input type="checkbox" id="cGrid" checked> grid</label>
     <label class="tgl" title="Show / hide the base floor plan behind the venues"><input type="checkbox" id="cBg" checked> plan</label>
+    <button id="bSettings" title="Editor settings — snapping">⚙ Settings</button>
   </div>
 </header>
 <main>
   <div id="wrap">
     <svg id="stage" xmlns="http://www.w3.org/2000/svg"></svg>
     <div id="hint"></div>
+    <div id="settings">
+      <b>Settings</b>
+      <label class="tgl"><input type="checkbox" id="cSnap"> Snap to vertices / edges</label>
+      <label>Threshold <input type="range" id="rSnap" min="2" max="24" step="1"> <span id="snapPxVal"></span></label>
+      <div class="tpnote">While dragging a vertex, handle or shape, it snaps to nearby vertices and edges. Hold <b>Alt</b> to bypass.</div>
+    </div>
     <div id="levels" title="Storey"></div>
     <div id="scalebar"><span id="scaleNote">–</span><div class="srow"><div class="bar"></div><span id="scaleMetres">–</span></div></div>
     <div id="zoomrf" title="Approximate print scale (assumes a 96 dpi screen at 100% browser zoom)"></div>
   </div>
   <aside>
+    <h2 id="toolTitle" style="display:none"></h2>
+    <div id="toolPanel" style="display:none">
+      <div id="tpStair" style="display:none">
+        <div id="tpStairNew" class="tpnote">
+          Draw the stair RUN on the plan: click each bend, then <b>Enter</b> / double-click to finish (min 2 points).
+          It joins floor <b id="tpStairLo"></b> ↔ <b id="tpStairHi"></b> — always draw it from the lower floor.
+          <span id="tpStairWarn" style="display:none;color:#ff8a8a">This is the top storey — switch to storey <span id="tpStairWarnF"></span> and draw from there.</span>
+        </div>
+        <div id="tpStairDraft" style="display:none">
+          <div class="tpnote"><b id="tpDraftN">0</b> point(s) placed — Enter / double-click to finish.</div>
+          <div style="margin-top:6px;display:flex;gap:6px"><button id="bFinishStair">Finish run</button><button id="bCancelStair">Cancel</button></div>
+        </div>
+        <div id="tpStairEdit" style="display:none">
+          <div class="kv">
+            <b>Name</b><input type="text" id="scName">
+            <b>Joins</b><span id="scSpan">–</span>
+            <b>Lower access</b><span>level <span id="scLoLvl"></span> · <span id="scLowerPos">–</span></span>
+            <b></b><button id="bSetLower" style="width:100%" title="Then click the map on this floor — the point snaps onto the run">Place on map</button>
+            <b>Upper access</b><span>level <span id="scHiLvl"></span> · <span id="scUpperPos">–</span></span>
+            <b></b><button id="bSetUpper" style="width:100%" title="Switches to the upper floor, then click the map — the point snaps onto the run">Place on map</button>
+          </div>
+          <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+            <button id="bScInsVtx" title="Next edge-click inserts a node">Insert node</button>
+            <button id="bScDelVtx" title="Delete the highlighted node">Delete node</button>
+          </div>
+          <div class="tpnote" style="margin-top:6px">Run nodes: drag the amber dots · blue + inserts a node · Alt-click a dot deletes it (min 2). This run is selected — drag the line to move the whole run; access points stay snapped onto it.</div>
+        </div>
+      </div>
+      <div id="tpRoom" style="display:none">
+        <div style="display:flex;gap:6px">
+          <button id="bRoomRect" title="Two opposite corners (R)">Rect</button>
+          <button id="bRoomRing" title="Click centre, then rim (C)">Circle / Donut</button>
+        </div>
+        <div class="tpnote" id="tpRoomNote" style="margin-top:6px"></div>
+      </div>
+      <div id="tpMarker" style="display:none">
+        <div style="display:flex;gap:6px">
+          <button id="bMkEntrance" title="Snaps onto the nearest venue edge">Entrance</button>
+          <button id="bMkLift" title="Lift / elevator icon">Elevator</button>
+        </div>
+        <div class="tpnote" id="tpMarkerNote" style="margin-top:6px"></div>
+      </div>
+    </div>
     <h2>Selection</h2>
     <div id="readout">Nothing selected.<br>Click a room or marker.</div>
     <div id="props" style="display:none">
-      <div class="kv">
+      <div class="kv" id="propGrid">
         <b>Name</b><input type="text" id="pName">
         <b>Type</b><select id="pType"></select>
+        <b>Height</b><select id="pHeight" title="Levels this room spans vertically — the room is drawn once on its bottom storey and mirrors onto the ones above"></select>
+        <b id="pSizeL">Size</b><span id="pSizeW" style="display:flex;gap:4px;align-items:center"><input type="text" id="pW" title="Length in metres (2 d.p.) — Enter to apply" style="width:56px"><span>×</span><input type="text" id="pD" title="Depth in metres (2 d.p.) — Enter to apply" style="width:56px"><span>m</span></span>
+        <b id="pRotL">Rot</b><input type="text" id="pRot" title="Rotation in degrees (1 d.p.) — Enter to apply">
+      </div>
+      <div id="grpProps" style="display:none">
+        <div class="kv">
+          <b>Box</b><span style="display:flex;gap:4px;align-items:center"><input type="text" id="pGw" title="Bounding-box length in metres — scales every member about the box centre" style="width:56px"><span>×</span><input type="text" id="pGd" title="Bounding-box depth in metres" style="width:56px"><span>m</span></span>
+          <b>Rot</b><input type="text" id="pGrot" title="Align rotation — sets every room in the group to this angle; the bounding box follows">
+        </div>
+        <div class="tpnote" style="margin-top:6px">Box size scales all members together (length/depth in metres); Rot aligns every room to the same angle and the bounding box follows. Click a member to sub-select it and edit it on its own.</div>
       </div>
       <div id="vtxBtns" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
         <button id="bAddVtxMode" title="Next edge-click inserts a vertex">Insert vertex</button>
         <button id="bDelVtx" title="Delete the highlighted vertex">Delete vertex</button>
       </div>
       <div id="cvtBtns" style="margin-top:8px;display:none;gap:6px">
-        <button id="bToRect" title="Fit the outline's minimum-area rectangle, then edit it parametrically">→ Rect</button>
-        <button id="bToRing" title="Fit a circle (centre + mean radius); drag the inner node to make a donut">→ Circle</button>
+        <button id="bToPoly" title="Bake this shape into a plain polygon (one-way — the parametric handles are removed)">→ Polygon</button>
       </div>
       <div id="shapeNote" style="display:none;margin-top:8px;font-size:12px;color:#9fb0c8;line-height:1.6">
         Parametric shape — edit the labelled nodes on the map:<br>
@@ -167,16 +232,21 @@
     <div style="font-size:12px;color:#9fb0c8" id="dataInfo"></div>
     <h2>Shortcuts</h2>
     <div style="font-size:12px;color:#9fb0c8;line-height:1.7">
-      V select · P polygon · R rect · C circle<br>
-      1–5 — switch storey<br>
-      F — mark ref point (align floors)<br>
-      Enter / double-click — close polygon<br>
-      Esc — cancel drawing<br>
+      V / Space select · S staircase<br>
+      R rect · C circle / donut · M marker<br>
+      F ref point · 1–5 — switch storey<br>
+      Enter / double-click — finish drawing<br>
+      Esc — cancel drawing / deselect<br>
       Del — delete selection<br>
       Ctrl+D — duplicate selection<br>
+      Shift+click — multi-select (add / remove)<br>
+      Ctrl+G — group · Ctrl+Shift+G — ungroup<br>
+      Click group member — sub-select it<br>
+      Size / Rot panel fields — edit numbers<br>
       ← ↑ → ↓ — move selection (Alt fine · Shift big)<br>
+      Alt (hold, while dragging) — bypass snapping<br>
       Ctrl+Z / Ctrl+Y — undo / redo<br>
-      Alt+click vertex — delete it<br>
+      Alt+click node/vertex — delete it<br>
       Mouse wheel — zoom · drag empty — pan
     </div>
   </aside>
@@ -189,6 +259,12 @@
    __DATA__ placeholder is replaced at build time with the full metadata JSON. */
 const EMBEDDED = /*__DATA__*/ null;
 const LS_KEY = "nyjc-floorplans-v1";
+const SET_KEY = "nyjc-editor-settings";   // editor preferences, separate from the floor data
+const settings = {snapVertex: true, snapPx: 8};
+try { Object.assign(settings, JSON.parse(localStorage.getItem(SET_KEY)) || {}); } catch(e) {}
+settings.snapVertex = typeof settings.snapVertex === "boolean" ? settings.snapVertex : true;
+settings.snapPx = Math.min(24, Math.max(2, +settings.snapPx || 8));
+function saveSettings() { try { localStorage.setItem(SET_KEY, JSON.stringify(settings)); } catch(e) {} }
 
 /* Location categories follow the venue enumeration
    (nyxchange-timetable-v2/fixtures/venues.csv → venue_category). */
@@ -201,17 +277,24 @@ const VENUE_CATS = [   // [slug, label] — canonical venue_category values
 ];
 const STRUCTURAL = [   // floor-plan anatomy, not bookable venues
   ["room","Room"], ["corridor","Corridor"], ["open-area","Open area"], ["void","Void / roof"],
-  ["canopy","Canopy"], ["atrium","Atrium"], ["store","Store"], ["wc","Toilets"],
-  ["stair-hall","Stair / lobby"], ["stair","Staircase"], ["lift","Lift"],
+  ["canopy","Canopy"], ["atrium","Atrium"], ["store","Store"], ["restroom","Restroom"],
+  ["stair-hall","Stair / lobby"], ["lift","Lift"],
   ["lobby","Entrance / foyer"], ["entrance","Entrance"], ["exit","Exit"], ["canteen","Canteen"],
 ];
-const LEGACY_TYPES = ["classroom","lab","lecture-theatre","hall","office",
-  "sports-hall","computer-lab","music"];   // still referenced by saved venues;
-// library / study-area / av-room had no remaining users and were dropped
-const TYPES = [...VENUE_CATS.map(v => v[0]), ...STRUCTURAL.map(v => v[0]), ...LEGACY_TYPES];
-const TYPE_LABEL = Object.fromEntries([...VENUE_CATS, ...STRUCTURAL,
-  ...LEGACY_TYPES.map(t => [t, t]), ["none", "None"]]);   // slug → legend/tooltip label
-const MKINDS = ["restroom","stair","lift","entrance","exit"];
+const DROPDOWN_STRUCTURAL_SKIP = ["entrance", "exit"];   // markers represent these; rooms don't need the type
+/* superseded slugs → canonical venue categories; repairData remaps them on
+   load/import, so they never appear in the Type dropdown */
+const LEGACY_TYPE_MAP = {
+  classroom:"non-ac-classroom", lab:"science-lab", "lecture-theatre":"large-capacity",
+  hall:"large-capacity", office:"meeting-room", "sports-hall":"sports-facility",
+  "computer-lab":"computer-room", music:"special-room", wc:"restroom",
+  library:"special-room", "study-area":"special-room", "av-room":"special-room",
+};
+const TYPE_LABEL = Object.fromEntries([...VENUE_CATS, ...STRUCTURAL, ["none", "None"]]);   // slug → legend label
+/* manually placeable marker kinds (restroom markers are derived from restroom
+   venues and staircase access points belong to the staircase feature itself) */
+const MKINDS = ["restroom","lift","entrance"];
+const PLACE_KINDS = ["entrance","lift"];   // kinds offered by the Marker tool panel
 /* Marker glyphs: Google Material Symbols (outlined, fill1), 24-unit grid,
    viewBox 0 -960 960 960, centred at (480,-480).
    Source https://fonts.google.com/icons (google/material-design-icons),
@@ -221,16 +304,14 @@ const GLYPH = {
   stair: "M240-240h177v-133h103v-133h103v-134h97v-80H543v133H440v133H337v134h-97v80Zm-40 120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Z",
   lift: "M280-240h120v-160h40v-100q0-33-23.5-56.5T360-580h-40q-33 0-56.5 23.5T240-500v100h40v160Zm60-380q21 0 35.5-14.5T390-670q0-21-14.5-35.5T340-720q-21 0-35.5 14.5T290-670q0 21 14.5 35.5T340-620Zm180 100h200L620-680 520-520Zm100 240 100-160H520l100 160ZM200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h560q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Z",
   entrance: "M480-120v-80h280v-560H480v-80h280q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H480Zm-80-160-55-58 102-102H120v-80h327L345-622l55-58 200 200-200 200Z",
-  exit: "M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h280v80H200v560h280v80H200Zm440-160-55-58 102-102H360v-80h327L585-622l55-58 200 200-200 200Z",
 };
-const FILL = {room:"#eef3f7","ac-classroom":"#cfe3f7","non-ac-classroom":"#ddeefb","lab":"#d9f2d9",
-  "science-lab":"#d9f2d9","phy-lab":"#e3f5e3","lecture-theatre":"#fde9c8","large-capacity":"#fde9c8",
-  hall:"#f3d9f7",canteen:"#fff2c9",library:"#d9e8ff",office:"#ffe3ec","meeting-room":"#ffe3ec",
-  wc:"#d9f7f7","stair-hall":"#e8e8e8","special-room":"#ede7f6","recording-pod":"#fce4ec",
+const FILL = {room:"#eef3f7","ac-classroom":"#cfe3f7","non-ac-classroom":"#ddeefb",
+  "science-lab":"#d9f2d9","phy-lab":"#e3f5e3","large-capacity":"#fde9c8",
+  canteen:"#fff2c9","meeting-room":"#ffe3ec",
+  "stair-hall":"#e8e8e8","special-room":"#ede7f6","recording-pod":"#fce4ec",
   corridor:"#f5f5f0","open-area":"#fbfbf8",void:"#ffffff",canopy:"#f0f0f0",atrium:"#eef7ee",
-  store:"#eceff1",lobby:"#f8f0e3","sports-hall":"#e2f7e2","sports-facility":"#e2f7e2",
-  "computer-lab":"#e1f5fe","computer-room":"#e1f5fe","av-room":"#ede7f6",music:"#fce4ec",
-  "study-area":"#fff8e1",stair:"#e8e8e8",lift:"#dcedc8",entrance:"#e8f5e9",exit:"#ffebee"};
+  store:"#eceff1",lobby:"#f8f0e3","sports-facility":"#e2f7e2",
+  "computer-room":"#e1f5fe",lift:"#dcedc8",entrance:"#e8f5e9",exit:"#ffebee"};
 const ORD = {void:0,"open-area":1,canopy:2,corridor:3};
 
 /* metres per SVG user unit (from site metadata; 1 for unit-less data) */
@@ -238,24 +319,121 @@ const SCALE = (EMBEDDED && EMBEDDED.site && EMBEDDED.site.scale_m_per_unit) || 1
 let bgEnabled = true;
 
 /* ---------- state ---------- */
-let data, floor, sel = null /* {kind:'room'|'marker', idx, vtx} */, tool = "select",
-    draft = null /* polygon points being drawn */, history = [], future = [],
-    view = null /* {x,y,w,h} */, drag = null;
+let data, floor, sel = null /* {kind:'room'|'marker'|'stair', idx, vtx, homeFloor, shift} */,
+    multi = [] /* multi-selection units — non-empty ⟺ sel is null. A unit is either a
+                  plain shape {kind:'room'|'stair'|'marker', idx, homeFloor, shift} or a
+                  whole group {kind:'group', id, homeFloor, shift}; shift is the ref
+                  offset home→display floor (mirrors). Units move together by mouse
+                  and arrows; only a lone GROUP unit may resize. */,
+    tool = "select", roomMode = "rect", markerKind = "entrance", placeMode = null /* 'lower'|'upper' */,
+    draft = null /* points being drawn */, history = [], future = [],
+    view = null /* {x,y,w,h} */, drag = null, repairedMsg = "";
 
 function load() {
   let saved = null;
   try { saved = JSON.parse(localStorage.getItem(LS_KEY)); } catch(e) {}
   data = saved || JSON.parse(JSON.stringify(EMBEDDED));
   if (!data || !data.storeys) { data = JSON.parse(JSON.stringify(EMBEDDED)); }
+  const n = repairData(data);
+  repairedMsg = repairNote(n);
+  if (n && (n.exit + n.snapped + n.wc + n.restMarks + n.rects + n.stairs + n.stairMarks + n.legacy) > 0 && saved) save();   // persist the fixes (embedded data stays pristine)
 }
 function save() {
   try { localStorage.setItem(LS_KEY, JSON.stringify(data)); } catch(e) { status("Autosave failed (storage full?)", "warn"); }
 }
 const roomsOf = f => data.storeys[f].rooms;
 const marksOf = f => data.storeys[f].markers;
+const stairsOf = f => data.storeys[f].staircases || (data.storeys[f].staircases = []);
+/* groups: ONE level of shape grouping, stored per storey as
+   {id, members:[{kind:'room'|'stair'|'marker', id}]} — members reference shapes
+   by id (markers get stable ids in the repair pass; rooms/stairs have ids
+   already). Clicking any member selects the whole group; it moves and resizes
+   as one unit. No nesting: a shape belongs to at most one group.
+   groupsOf() is read-only — only ensureGroups() may create the list, so a
+   mere selection click never writes `groups: []` into the autosave. */
+const groupsOf = f => data.storeys[f].groups || [];
+const ensureGroups = f => data.storeys[f].groups || (data.storeys[f].groups = []);
+const groupById = (f, id) => groupsOf(f).find(g => g && g.id === id) || null;
+const groupOfShape = (f, kind, id) =>
+  groupsOf(f).find(g => g && g.members.some(m => m.kind === kind && m.id === id)) || null;
+function nextGroupId(f) {
+  const used = new Set(groupsOf(f).map(g => g.id));
+  let n = 1; while (used.has(`s${f}-g${String(n).padStart(2,"0")}`)) n++;
+  return `s${f}-g${String(n).padStart(2,"0")}`;
+}
+function nextMarkerId(f) {
+  const used = new Set(marksOf(f).map(m => m.id));
+  let n = 1; while (used.has(`s${f}-m${String(n).padStart(2,"0")}`)) n++;
+  return `s${f}-m${String(n).padStart(2,"0")}`;
+}
 function snapshot() { history.push(JSON.stringify(data)); if (history.length > 80) history.shift(); future.length = 0; updateBtns(); }
-function undo() { if (!history.length) return; future.push(JSON.stringify(data)); data = JSON.parse(history.pop()); sel = null; refresh(true); save(); status("Undone"); }
-function redo() { if (!future.length) return; history.push(JSON.stringify(data)); data = JSON.parse(future.pop()); sel = null; refresh(true); save(); status("Redone"); }
+/* undo/redo keep the selection: remember WHICH object was selected, then re-find
+   it in the restored data — by id for rooms/stair runs (survives index shifts),
+   by content for markers (no id; falls back to the index when the undo changed
+   the selected marker itself). Cleared only when the undo removed it. */
+function keepSelForHistory() {
+  if (multi.length)   // multi-selection: every unit re-found after the restore
+    return {multi: multi.map(u => {
+      if (u.kind === "group") return {kind:"group", id:u.id, homeFloor:u.homeFloor};
+      if (u.kind === "marker") {
+        const m = marksOf(floor)[u.idx];
+        return m ? {kind:"marker", idx:u.idx, copy:JSON.stringify({kind:m.kind, name:m.name, point:m.point})} : null;
+      }
+      const fl = u.homeFloor != null ? u.homeFloor : floor;
+      const o = (u.kind === "room" ? roomsOf(fl) : stairsOf(fl))[u.idx];
+      return o ? {kind:u.kind, idx:u.idx, homeFloor:u.homeFloor, id:o.id} : null;
+    }).filter(Boolean)};
+  if (!sel) return null;
+  if (sel.kind === "room") { const r = roomsOf(selFloor())[sel.idx]; return r ? {kind:"room", idx:sel.idx, homeFloor:sel.homeFloor, id:r.id} : null; }
+  if (sel.kind === "stair") { const s = stairsOf(selFloor())[sel.idx]; return s ? {kind:"stair", idx:sel.idx, homeFloor:sel.homeFloor, id:s.id} : null; }
+  const m = marksOf(floor)[sel.idx];
+  return m ? {kind:"marker", idx:sel.idx, copy:JSON.stringify({kind:m.kind, name:m.name, point:m.point})} : null;
+}
+function resolveKeepUnit(k) {   // one kept unit → live unit in the restored data
+  if (k.kind === "marker") {
+    const marks = marksOf(floor);
+    let i = marks.findIndex(m => JSON.stringify({kind:m.kind, name:m.name, point:m.point}) === k.copy);
+    if (i < 0 && k.idx < marks.length) i = k.idx;   // the undo changed this very marker
+    return i < 0 ? null : {kind:"marker", idx:i};
+  }
+  if (k.kind === "group")
+    return groupById(k.homeFloor, k.id)
+      ? {kind:"group", id:k.id, homeFloor:k.homeFloor,
+         shift: String(k.homeFloor) !== String(floor) ? frameOffset(data, k.homeFloor, floor) : null}
+      : null;
+  const fl = k.homeFloor != null ? k.homeFloor : floor;
+  const arr = k.kind === "room" ? roomsOf(fl) : stairsOf(fl);
+  const i = arr.findIndex(o => o.id === k.id);
+  return i < 0 ? null
+    : {kind:k.kind, idx:i, homeFloor:k.homeFloor,
+       shift: k.homeFloor != null ? frameOffset(data, k.homeFloor, floor) : null};
+}
+function restoreSelAfterHistory(keep) {
+  if (keep && keep.multi) {   // multi-selection: restore every unit that survived
+    sel = null;
+    multi = keep.multi.map(resolveKeepUnit).filter(Boolean);
+    collapseMulti();
+    return;
+  }
+  multi = [];
+  if (!keep) { sel = null; return; }
+  if (keep.kind === "marker") {
+    const marks = marksOf(floor);
+    let i = marks.findIndex(m => JSON.stringify({kind:m.kind, name:m.name, point:m.point}) === keep.copy);
+    if (i < 0 && keep.idx < marks.length) i = keep.idx;   // the undo changed this very marker
+    if (i < 0) { sel = null; return; }
+    sel = {kind:"marker", idx:i, vtx:null};
+    return;
+  }
+  const homeFloor = keep.homeFloor, arr = keep.kind === "room"
+    ? roomsOf(homeFloor != null ? homeFloor : floor) : stairsOf(homeFloor != null ? homeFloor : floor);
+  const i = arr.findIndex(o => o.id === keep.id);
+  if (i < 0) { sel = null; return; }
+  sel = {kind:keep.kind, idx:i, homeFloor, vtx:null,
+         shift: homeFloor != null ? frameOffset(data, homeFloor, floor) : null};
+}
+function undo() { if (!history.length) return; const keep = keepSelForHistory(); future.push(JSON.stringify(data)); data = JSON.parse(history.pop()); restoreSelAfterHistory(keep); refresh(true); save(); status("Undone"); }
+function redo() { if (!future.length) return; const keep = keepSelForHistory(); history.push(JSON.stringify(data)); data = JSON.parse(future.pop()); restoreSelAfterHistory(keep); refresh(true); save(); status("Redone"); }
 
 /* ---------- geometry ---------- */
 const area = pts => { let s = 0; for (let i = 0; i < pts.length; i++) { const [x1,y1] = pts[i], [x2,y2] = pts[(i+1)%pts.length]; s += x1*y2 - x2*y1; } return Math.abs(s)/2; };
@@ -270,13 +448,54 @@ const areaCentroid = pts => {   // polygon area centroid (shoelace) — correct 
   }
   return Math.abs(a) < 1e-9 ? centroid(pts) : [cx/(3*a), cy/(3*a)];
 };
+const pip = (pt, poly) => {   // point in polygon (ray cast; on-edge decided by edgeDist)
+  let inside = false;
+  for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+    const [xi, yi] = poly[i], [xj, yj] = poly[j];
+    if ((yi > pt[1]) !== (yj > pt[1]) && pt[0] < (xj-xi)*(pt[1]-yi)/(yj-yi)+xi) inside = !inside;
+  }
+  return inside;
+};
+const segClosest = (p, a, b) => {   // closest point to p on segment [a,b]
+  const dx = b[0]-a[0], dy = b[1]-a[1], L2 = dx*dx + dy*dy;
+  const t = L2 ? Math.max(0, Math.min(1, ((p[0]-a[0])*dx + (p[1]-a[1])*dy)/L2)) : 0;
+  return [a[0] + t*dx, a[1] + t*dy];
+};
+const edgeDist = (pt, poly) => {    // distance from pt to a polygon's boundary
+  let d = 1e18;
+  for (let i = 0; i < poly.length; i++) {
+    const q = segClosest(pt, poly[i], poly[(i+1)%poly.length]);
+    const dd = Math.hypot(pt[0]-q[0], pt[1]-q[1]);
+    if (dd < d) d = dd;
+  }
+  return d;
+};
 function extents(f) {
   const all = [...roomsOf(f).map(r=>r.outline).flat(), ...marksOf(f).map(m=>m.point)];
+  for (const v of stairViewsOn(f)) all.push(...v.pts);   // stair runs count as content too
   const bg = data.storeys[f].background;
   if (bg) { all.push([bg.x, bg.y], [bg.x+bg.width, bg.y+bg.height]); }
   const [a,b] = bboxOf(all.length?all:[[0,0]]);
   const m = 14;
   return {x:a[0]-m, y:a[1]-m, w:b[0]-a[0]+2*m, h:b[1]-a[1]+2*m};
+}
+/* pan/zoom limit: the view can never lose the floor entirely. After any pan or
+   wheel-zoom the view must still overlap the content bounding box by ≥ 20% of
+   the smaller side on EACH axis — a stray scroll can no longer leave you
+   staring at nothing, and panning back toward the plan is always allowed.
+   Zoom magnitude is bounded too: at most 10× the floor's largest content
+   dimension (the plan stays ≥ 10% of the viewport), at least 1/100 of it
+   (~3 m across the screen at 1:700 — deep enough for any node editing). */
+function clampViewToContent() {
+  if (!view) return;
+  const e = extents(floor);
+  const emax = Math.max(e.w, e.h);
+  const zMax = 10 * emax, zMin = emax / 100;   // view.w bounds (h keeps the aspect)
+  if (view.w > zMax) { const k = zMax / view.w; view = {x: view.x + (view.w - zMax)/2, y: view.y + (view.h - zMax*k)/2, w: zMax, h: view.h*k}; }
+  if (view.w < zMin) { const k = zMin / view.w; view = {x: view.x - (zMin - view.w)/2, y: view.y - (zMin*k - view.h)/2, w: zMin, h: view.h*k}; }
+  const mx = 0.2 * Math.min(view.w, e.w), my = 0.2 * Math.min(view.h, e.h);
+  view.x = Math.max(Math.min(view.x, e.x + e.w - mx), e.x + mx - view.w);
+  view.y = Math.max(Math.min(view.y, e.y + e.h - my), e.y + my - view.h);
 }
 
 /* ---------- parametric shapes ----------
@@ -294,8 +513,8 @@ function rectCorners(s) {
   return [[-1,-1],[1,-1],[1,1],[-1,1]].map(([a,b]) =>
     [s.c[0] + a*s.w/2*u[0] + b*s.h/2*v[0], s.c[1] + a*s.w/2*u[1] + b*s.h/2*v[1]]);
 }
-function ringPts(s, r, aFrom, aTo) {   // arc polyline, aFrom→aTo in degrees
-  const n = Math.max(2, Math.ceil(Math.abs(aTo - aFrom)/360*48));
+function ringPts(s, r, aFrom, aTo, steps) {   // arc polyline, aFrom→aTo in degrees
+  const n = Math.max(2, Math.ceil(Math.abs(aTo - aFrom)/360*(steps || 48)));
   const pts = [];
   for (let i = 0; i <= n; i++) {
     const a = (aFrom + (aTo - aFrom)*i/n)*RAD;
@@ -303,12 +522,12 @@ function ringPts(s, r, aFrom, aTo) {   // arc polyline, aFrom→aTo in degrees
   }
   return pts;
 }
-function shapeOutline(s) {             // flat outer boundary (single subpath)
+function shapeOutline(s, steps) {      // flat outer boundary (single subpath)
   if (s.kind === "rect") return rectCorners(s);
   const sweep = sweepOf(s), a0 = s.a0, a1 = a0 + sweep;
-  const out = ringPts(s, s.rOut, a0, a1);
+  const out = ringPts(s, s.rOut, a0, a1, steps);
   if (!s.rIn) return sweep >= 359.999 ? out : [...out, s.c.slice()];
-  return sweep >= 359.999 ? out : [...out, ...ringPts(s, s.rIn, a1, a0)];
+  return sweep >= 359.999 ? out : [...out, ...ringPts(s, s.rIn, a1, a0, steps)];
 }
 function toD(pts) { return "M " + pts.map(p => p[0].toFixed(2) + "," + p[1].toFixed(2)).join(" L ") + " Z"; }
 function shapeD(s) {                   // full path (donut = two subpaths, hole via winding)
@@ -338,6 +557,25 @@ function tidyShape(s) {
   s.c = [+s.c[0].toFixed(2), +s.c[1].toFixed(2)];
   for (const k of ["w","h","rIn","rOut"]) if (s[k] != null) s[k] = +(+s[k]).toFixed(2);
   for (const k of ["rot","a0","a1"]) if (s[k] != null) s[k] = +norm360(+s[k]).toFixed(1);
+}
+function convertToPolygon(r) {   // bake a parametric shape into a plain polygon (one-way)
+  if (!r.shape) return;
+  const s = r.shape;
+  let pts;
+  if (s.kind === "rect") {
+    pts = rectCorners(s);
+  } else if (s.rIn && sweepOf(s) >= 359.999) {
+    // full donut: keep the hole as an outer + inner-arc (reversed) wound outline —
+    // area stays the annulus area and the hole still renders via winding
+    pts = [...ringPts(s, s.rOut, 0, 360, 240), ...ringPts(s, s.rIn, 360, 0, 240)];
+  } else {
+    pts = shapeOutline(s, 240);   // circle / pie / annulus sector at bake resolution
+  }
+  delete r.shape;
+  r.outline = pts.map(p => [+p[0].toFixed(2), +p[1].toFixed(2)]);
+  r.area_m2 = +(area(r.outline)*SCALE*SCALE).toFixed(1);
+  const [a, b] = bboxOf(r.outline);
+  r.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
 }
 function defaultLabelPos(r) {  /* label home: the outline's AREA centroid, centred on the text */
   if (r.shape && r.shape.kind === "ring" && r.shape.rIn) {   // donut: outline loses the inner
@@ -370,6 +608,399 @@ function obbFull(pts) {                // min-area rect: centre, w, h, rotation
           w:best.sMax-best.sMin, h:best.tMax-best.tMin, rot:Math.atan2(best.uy, best.ux)*DEG};
 }
 
+/* ---------- feature semantics ----------
+   The toolbar adds FEATURES (staircase / room / marker), each with its own tool
+   panel in the sidebar. entrance/exit are one merged marker kind (not
+   differentiated); an entrance marks the interface between two venues
+   ("outside" is the global venue), so it must sit on/near a venue outline —
+   anything placed beyond that is projected onto the nearest venue edge.
+   Restrooms are their own venue category (restroom): they get their marker
+   AUTOMATICALLY at the venue centroid — restroom markers are never placed
+   manually and are stripped from saved data on load.
+   Staircases are LINE features (never polygons) spanning exactly two ADJACENT
+   floors (lo → hi = lo+1): a multi-level stairwell is one run per storey pair,
+   so each floor's entrances/exits are separate, differentiable icons. A run is
+   stored on its LOWER floor (home) as {id, name, lo, hi, points, lower, upper}
+   — points are the editable polyline nodes; lower/upper are the access points,
+   always snapped ON the run (placement snaps; node edits re-project them).
+   The line renders on BOTH floors of its pair (ref-aligned mirror on the upper
+   floor); an access icon renders only on its own floor, badged "↑N / ↓N"
+   naming the other floor. A run missing an access point renders red
+   (editor-only); the selection outline is the accent blue. */
+const ENTRANCE_TOL = 1.0;    // units: ≤ this from an outline counts as on/near the edge
+function venueAt(pt, rooms, tol = 0) {
+  for (const r of rooms) if (pip(pt, r.outline) || edgeDist(pt, r.outline) <= tol) return r;
+  return null;
+}
+function snapToVenueEdge(pt, rooms) {   // closest point on the closest venue outline
+  let best = null, bd = 1e18;
+  for (const r of rooms) for (let i = 0; i < r.outline.length; i++) {
+    const q = segClosest(pt, r.outline[i], r.outline[(i+1)%r.outline.length]);
+    const d = Math.hypot(pt[0]-q[0], pt[1]-q[1]);
+    if (d < bd) { bd = d; best = q; }
+  }
+  return best ? [+best[0].toFixed(2), +best[1].toFixed(2)] : pt;
+}
+function enforceEntrance(m, rooms) {    // keep entrances within a venue
+  if (!m || m.kind !== "entrance" || !rooms.length) return false;
+  if (venueAt(m.point, rooms, ENTRANCE_TOL)) return false;
+  const p = snapToVenueEdge(m.point, rooms);
+  if (p === m.point) return false;
+  m.point = p;
+  return true;
+}
+
+/* ---------- staircases ----------
+   Line features stored on the LOWER floor of their adjacent pair — see the
+   feature-semantics block above. All geometry helpers take the data object so
+   the repair pass can use them on imported data before it becomes global. */
+const bgOrigin = (d, f) => {
+  const bg = d.storeys[f] && d.storeys[f].background;
+  return bg ? [bg.x, bg.y] : [0, 0];
+};
+function frameOffset(d, fromF, toF) {   // translation from floor fromF's frame to toF's
+  const a = d.storeys[String(fromF)], b = d.storeys[String(toF)];
+  if (!a || !b) return [0, 0];
+  if (a.ref && b.ref) return [b.ref[0]-a.ref[0], b.ref[1]-a.ref[1]];
+  const ba = bgOrigin(d, String(fromF)), bb = bgOrigin(d, String(toF));   // bg corner fallback
+  return [bb[0]-ba[0], bb[1]-ba[1]];
+}
+const polyLen = pts => { let L = 0; for (let i = 1; i < pts.length; i++) L += Math.hypot(pts[i][0]-pts[i-1][0], pts[i][1]-pts[i-1][1]); return L; };
+const polyD = pts => "M " + pts.map(p => p[0].toFixed(2) + "," + p[1].toFixed(2)).join(" L ");
+const snapToPolyline = (pt, pts) => {   // nearest point ON the polyline (open path)
+  let best = null, bd = 1e18;
+  for (let i = 1; i < pts.length; i++) {
+    const q = segClosest(pt, pts[i-1], pts[i]);
+    const d = Math.hypot(pt[0]-q[0], pt[1]-q[1]);
+    if (d < bd) { bd = d; best = q; }
+  }
+  return best ? [+best[0].toFixed(2), +best[1].toFixed(2)] : pt;
+};
+function reprojectAccess(s) {   // keep access points ON the run after node edits
+  if (s.lower) s.lower = snapToPolyline(s.lower, s.points);
+  if (s.upper) s.upper = snapToPolyline(s.upper, s.points);
+}
+/* vertex + edge snapping: while dragging a vertex or parametric handle, the point
+   snaps to the nearest OTHER vertex on this floor, or — when no vertex is in
+   range — onto the nearest EDGE (projected onto the segment). While MOVING a
+   whole shape (room / stair run), its vertices snap to nearby vertices, edge
+   projections and points, and its edges align collinear onto nearby parallel
+   edges — perpendicular offset only, so touching shapes keep sliding along the
+   shared line. Candidates are THIS level's own shapes only (rooms + runs stored
+   on this floor) — mirrors of other levels' shapes are visible but are NOT snap
+   targets (no cross-level snapping). The dragged shape's own dragged vertex /
+   incident edges / whole self (translate) are excluded so nothing snaps to
+   itself. Threshold is settings.snapPx (screen px → units at the current zoom);
+   hold Alt to bypass temporarily. Snap points are in DISPLAY-frame units; callers
+   convert back into the shape's frame. The green ring on the snapped target is
+   drawn by refresh() via drag.snapTarget. */
+function snapCandidates(excl) {   // vertices + edges of THIS level's own shapes only
+  const verts = [], segs = [];    // (native rooms + runs stored on this floor) — mirrors
+  const vPush = q => verts.push([+q[0].toFixed(2), +q[1].toFixed(2)]);   // of other levels'
+  const sPush = (a, b) => segs.push([[+a[0].toFixed(2), +a[1].toFixed(2)], [+b[0].toFixed(2), +b[1].toFixed(2)]]);   // shapes are visible but NOT snap targets (no cross-level snapping)
+  roomsOf(floor).forEach(r => {
+    if (excl.allOfRoom && r === excl.room) return;
+    if (excl.rooms && excl.rooms.has(r)) return;   // multi-move: every moved room
+    const o = r.outline;
+    o.forEach((q, vi) => { if (!(r === excl.room && vi === excl.vi)) vPush(q); });
+    o.forEach((q, vi) => {
+      const w = o[(vi+1) % o.length];
+      if (!(r === excl.room && (vi === excl.vi || (vi+1) % o.length === excl.vi))) sPush(q, w);
+    });
+  });
+  stairsOf(floor).forEach((s, idx) => {
+    const own = idx === excl.stairIdx;
+    if (own && excl.allOfStair) return;
+    if (excl.stairs && excl.stairs.has(s)) return;   // multi-move: every moved run
+    s.points.forEach((q, si) => { if (!(own && si === excl.vi)) vPush(q); });
+    s.points.forEach((q, si) => {
+      if (si + 1 >= s.points.length) return;
+      if (own && (si === excl.vi || si + 1 === excl.vi)) return;
+      sPush(q, s.points[si + 1]);
+    });
+  });
+  return {verts, segs};
+}
+function snapVertex(pDisp, excl, disabled) {
+  drag.snapTarget = null;
+  if (disabled || !settings.snapVertex) return pDisp;
+  const th = settings.snapPx * view.w / Math.max(1, stage.clientWidth);   // px → units
+  const {verts, segs} = snapCandidates(excl);
+  let best = null, bd = th * th;
+  const consider = q => {
+    const d = (pDisp[0]-q[0])*(pDisp[0]-q[0]) + (pDisp[1]-q[1])*(pDisp[1]-q[1]);
+    if (d < bd) { bd = d; best = q; }
+  };
+  verts.forEach(consider);
+  if (best) { drag.snapTarget = best; return [+best[0].toFixed(2), +best[1].toFixed(2)]; }
+  // no vertex in range: project onto nearby edges (vertices take priority)
+  let eBest = null, eBd = th * th;
+  segs.forEach(s => {
+    const q = segClosest(pDisp, s[0], s[1]);
+    const d = (pDisp[0]-q[0])*(pDisp[0]-q[0]) + (pDisp[1]-q[1])*(pDisp[1]-q[1]);
+    if (d < eBd) { eBd = d; eBest = q; }
+  });
+  if (eBest) { drag.snapTarget = eBest; return [+eBest[0].toFixed(2), +eBest[1].toFixed(2)]; }
+  return pDisp;
+}
+/* translate snap for whole-shape moves: pts/edges are the translated shape in
+   DISPLAY-frame units; returns the smallest adjustment {ax, ay, target} bringing
+   a moving vertex onto a nearby vertex / edge projection, or a moving edge
+   collinear onto a nearby parallel edge (perpendicular only — the shape keeps
+   sliding along the shared line). Vertex pairs win outright (as in snapVertex);
+   edge candidates only apply while no corner pair is within the snap radius. */
+function applyTranslateSnap(pts, edges, excl, disabled) {
+  drag.snapTarget = null;
+  if (disabled || !settings.snapVertex || !pts.length) return {ax: 0, ay: 0, target: null};
+  const th = settings.snapPx * view.w / Math.max(1, stage.clientWidth);
+  const {verts, segs} = snapCandidates(excl);
+  let bestAdj = null, bestTarget = null, bd = th * th;
+  // corner pairs take priority over edge snaps (same contract as snapVertex):
+  // a projection onto the facing edge is always strictly closer than the corner
+  // pair whenever any along-edge offset exists, so a shared magnitude contest
+  // lets identical shapes rest flush with their corners permanently unaligned
+  for (const p of pts) {
+    for (const q of verts) {
+      const ax = q[0]-p[0], ay = q[1]-p[1], d = ax*ax + ay*ay;
+      if (d < bd) { bd = d; bestAdj = [ax, ay]; bestTarget = q; }
+    }
+  }
+  if (!bestAdj) {
+    // no corner pair in range: project onto nearby edges (vertices take priority)
+    for (const p of pts) {
+      for (const s of segs) {
+        const q = segClosest(p, s[0], s[1]);
+        const ax = q[0]-p[0], ay = q[1]-p[1], d = ax*ax + ay*ay;
+        if (d < bd) { bd = d; bestAdj = [ax, ay]; bestTarget = q; }
+      }
+    }
+    for (const [a, b] of edges) {
+      const ex = b[0]-a[0], ey = b[1]-a[1], el = Math.hypot(ex, ey);
+      if (el < 1e-9) continue;
+      const ux = ex/el, uy = ey/el;
+      for (const [c, d] of segs) {
+        const fx = d[0]-c[0], fy = d[1]-c[1], fl = Math.hypot(fx, fy);
+        if (fl < 1e-9) continue;
+        const gx = fx/fl, gy = fy/fl;
+        if (Math.abs(ux*gy - uy*gx) >= 0.08) continue;   // near-parallel edges only
+        const t0 = (a[0]-c[0])*gx + (a[1]-c[1])*gy, t1 = (b[0]-c[0])*gx + (b[1]-c[1])*gy;
+        const lo = Math.min(t0, t1), hi = Math.max(t0, t1);
+        if (hi < -th || lo > fl + th) continue;          // edges must overlap (or nearly) along the line
+        const signed = (a[0]-c[0])*gy - (a[1]-c[1])*gx;  // perpendicular offset of a from the line
+        if (Math.abs(signed) < 0.05) continue;           // already touching — don't block vertex snaps
+        const ax = -signed*gy, ay = signed*gx;           // minimal adjustment onto the line
+        const mag = signed*signed;
+        if (mag < bd) { bd = mag; bestAdj = [ax, ay]; bestTarget = [a[0]+ax, a[1]+ay]; }
+      }
+    }
+  }
+  if (bestAdj) { drag.snapTarget = bestTarget; return {ax: bestAdj[0], ay: bestAdj[1], target: bestTarget}; }
+  return {ax: 0, ay: 0, target: null};
+}
+function stairViewsOn(f) {   // every run touching floor f (native + upper-floor mirror)
+  const fs = String(f), out = [];
+  for (const g of Object.keys(data.storeys)) {
+    (data.storeys[g].staircases || []).forEach((s, i) => {
+      if (s.lo !== +fs && s.hi !== +fs) return;
+      const off = +g === +fs ? [0, 0] : frameOffset(data, g, fs);
+      const mv = p => p && [p[0]+off[0], p[1]+off[1]];
+      out.push({s, home:g, idx:i, off, mirrored:+g !== +fs,
+        pts: s.points.map(p => [p[0]+off[0], p[1]+off[1]]),
+        lower: mv(s.lower), upper: mv(s.upper)});
+    });
+  }
+  return out.sort((a, b) => (a.mirrored === b.mirrored) ? 0 : a.mirrored ? -1 : 1);   // native drawn last
+}
+function stairIssues() {   // editor-only: which runs render red
+  const bad = new Set();
+  for (const f of Object.keys(data.storeys))
+    (data.storeys[f].staircases || []).forEach((s, i) => {
+      if (!Array.isArray(s.points) || s.points.length < 2 || s.hi !== +f + 1 || !s.lower || !s.upper)
+        bad.add(f + ":" + i);
+    });
+  return bad;
+}
+function nextStairId(d, f) {
+  const used = new Set(((d.storeys[f] && d.storeys[f].staircases) || []).map(s => s.id));
+  let n = 1; while (used.has(`s${f}-sc${String(n).padStart(2,"0")}`)) n++;
+  return `s${f}-sc${String(n).padStart(2,"0")}`;
+}
+
+/* ---------- multi-level rooms ----------
+   room.height ∈ {2, 3} (absent = 1): the room spans that many levels VERTICALLY,
+   drawn ONCE on its bottom storey and rendered ref-aligned on the levels above
+   (no more lt4-lower/lt4-upper duplicates). Mirrors are views of the home room
+   (never stored) and are fully EDITABLE through sel.homeFloor/shift, like stair
+   runs. A span reaching past the top storey renders only the levels that exist. */
+const topStorey = () => Math.max(...Object.keys(data.storeys).map(Number));
+function heightSpan(r, f) {   // effective [bottom, top] of a room placed on floor f
+  const h = r.height || 1;
+  const lo = +f;   // selFloor() can be a string (mirror selections carry dataset floors)
+  return [lo, Math.min(lo + h - 1, topStorey())];
+}
+function roomMirrorsOn(f) {   // height ≥ 2 rooms based on OTHER floors whose span covers f
+  const fs = String(f), out = [];
+  for (const g of Object.keys(data.storeys)) {
+    if (g === fs) continue;
+    (data.storeys[g].rooms || []).forEach((r, i) => {
+      if ((r.height || 1) < 2) return;
+      const [lo, hi] = heightSpan(r, +g);
+      if (+fs < lo + 1 || +fs > hi) return;
+      const off = frameOffset(data, g, fs);
+      out.push({...r, mirroredFrom: g, homeIdx: i,
+        outline: r.outline.map(p => [p[0]+off[0], p[1]+off[1]]),
+        shape: r.shape ? {...r.shape, c: [r.shape.c[0]+off[0], r.shape.c[1]+off[1]]} : undefined});
+    });
+  }
+  return out;
+}
+function repairData(d) {   // one-time idempotent fixes on loaded/imported data
+  const n = {exit: 0, snapped: 0, wc: 0, restMarks: 0, rects: 0, stairs: 0, stairAcc: 0, stairMarks: 0, legacy: 0};
+  for (const f of Object.keys(d.storeys)) {
+    const st = d.storeys[f], rooms = st.rooms || [];
+    if (!Array.isArray(st.staircases)) st.staircases = [];
+    for (const r of rooms) {
+      if (Array.isArray(r.levels) && r.levels.length === 2 && r.levels[0] > r.levels[1])
+        r.levels = [r.levels[1], r.levels[0]];   // lowest level first
+      // multi-level rooms: height must be an integer 2..3, anything else drops the field
+      if (r.height != null) {
+        const h = +r.height;
+        if (Number.isInteger(h) && h >= 2 && h <= 3) r.height = h;
+        else delete r.height;
+      }
+      // superseded legacy slugs → canonical venue categories (kept out of the dropdown)
+      if (LEGACY_TYPE_MAP[r.type]) { r.type = LEGACY_TYPE_MAP[r.type]; n.legacy++; }
+      if ((r.type === "none" || r.type === "room") &&
+               /rest\s*room|toilet|wc\b|washroom|bathroom|lavator|shower/i.test(r.name || "")) {
+        r.type = "restroom"; n.wc++;
+      }
+      // one-time migration: rectangular polygons become parametric Rects (the
+      // minimum-area rectangle covers the polygon exactly only when it IS one)
+      if (!r.shape && Array.isArray(r.outline) && r.outline.length >= 3) {
+        const o = obbFull(r.outline), pa = area(r.outline);
+        if (pa > 1 && Math.abs(o.w*o.h - pa)/pa < 0.01) {
+          r.shape = {kind:"rect", c:[+o.c[0].toFixed(2), +o.c[1].toFixed(2)],
+                     w:+o.w.toFixed(2), h:+o.h.toFixed(2), rot:+o.rot.toFixed(1)};
+          applyShape(r);
+          n.rects++;
+        }
+      }
+    }
+  }
+  // staircase migration: the old model was stair VENUES (polygons with a level
+  // range) + stair markers per level. The new model is one line run per
+  // adjacent floor pair with two access points — old stair markers feed those,
+  // leftover ones are stripped.
+  const stairMarks = {};
+  for (const f of Object.keys(d.storeys))
+    d.storeys[f].markers = (d.storeys[f].markers || []).filter(m => {
+      if (m.kind !== "stair") return true;
+      (stairMarks[f] = stairMarks[f] || []).push(m);
+      n.stairMarks++;
+      return false;
+    });
+  for (const f of Object.keys(d.storeys)) {
+    const st = d.storeys[f], kept = [];
+    for (const r of st.rooms || []) {
+      if (r.type === "stair") convertStairRoom(d, f, r, stairMarks, n);
+      else kept.push(r);
+    }
+    st.rooms = kept;
+    const keptM = [];
+    for (const m of st.markers || []) {
+      if (m.kind === "restroom") { n.restMarks++; continue; }   // derived from venues now
+      if (m.kind === "exit") {   // merged into entrance
+        m.kind = "entrance";
+        if (/^exit$/i.test(m.name || "")) m.name = "Entrance";
+        n.exit++;
+      }
+      if (enforceEntrance(m, st.rooms || [])) n.snapped++;
+      keptM.push(m);
+    }
+    st.markers = keptM;
+    // stable marker ids (groups reference members by id) — silent, idempotent
+    const mIds = new Set(st.markers.map(m => m.id));
+    let mn = 1;
+    for (const m of st.markers)
+      if (!m.id) { while (mIds.has(`s${f}-m${String(mn).padStart(2,"0")}`)) mn++; m.id = `s${f}-m${String(mn).padStart(2,"0")}`; mIds.add(m.id); }
+    // group sanitisation: members must exist on this storey, one level of
+    // grouping means a shape belongs to at most one group (first wins), and
+    // empty groups disappear
+    if (Array.isArray(st.groups)) {
+      const roomIds = new Set((st.rooms || []).map(r => r.id));
+      const stairIds = new Set((st.staircases || []).map(s => s.id));
+      const markIds = new Set(st.markers.map(m => m.id));
+      const claimed = new Set();
+      st.groups = st.groups
+        .filter(g => g && g.id && Array.isArray(g.members))
+        .map(g => {
+          const members = [];
+          for (const m of g.members) {
+            if (!m || !m.id) continue;
+            const ok = m.kind === "room" ? roomIds.has(m.id)
+                     : m.kind === "stair" ? stairIds.has(m.id)
+                     : m.kind === "marker" ? markIds.has(m.id) : false;
+            const key = m.kind + ":" + m.id;
+            if (ok && !claimed.has(key)) { claimed.add(key); members.push({kind:m.kind, id:m.id}); }
+          }
+          const out = {id:String(g.id), members};
+          if (g.rot != null && Number.isFinite(+g.rot)) out.rot = +(+g.rot).toFixed(1);   // group rotation alignment
+          return out;
+        })
+        .filter(g => g.members.length);
+      if (!st.groups.length) delete st.groups;   // don't persist empty group lists
+    }
+  }
+  return n;
+}
+function convertStairRoom(d, f, r, stairMarks, n) {   // legacy stair venue → line runs
+  const pts = r.outline;
+  n.stairs++;
+  if (!Array.isArray(pts) || pts.length < 3) return;   // degenerate: just dropped
+  const o = obbFull(pts), long = Math.max(o.w, o.h);   // centreline = long axis of the min-area rect
+  const u = o.w >= o.h
+    ? [Math.cos(o.rot*RAD), Math.sin(o.rot*RAD)]
+    : [-Math.sin(o.rot*RAD), Math.cos(o.rot*RAD)];
+  const line = [[o.c[0]-u[0]*long/2, o.c[1]-u[1]*long/2], [o.c[0]+u[0]*long/2, o.c[1]+u[1]*long/2]]
+    .map(p => [+p[0].toFixed(2), +p[1].toFixed(2)]);
+  const rng = Array.isArray(r.levels) && r.levels.length === 2
+    ? [Math.max(1, r.levels[0]), Math.min(5, r.levels[1])] : [+f, +f];
+  for (let k = rng[0]; k < rng[1]; k++) {   // one run per ADJACENT pair, stored on the lower floor
+    if (!d.storeys[String(k)] || !d.storeys[String(k+1)]) continue;
+    const off = frameOffset(d, f, k);   // run geometry lives in the pair's lower floor's frame
+    const inK = line.map(p => [+(p[0]+off[0]).toFixed(2), +(p[1]+off[1]).toFixed(2)]);
+    const findAcc = g => {   // an old stair marker on floor g sitting in this staircase as seen there
+      const back = frameOffset(d, k, g), here = pts.map(p => [p[0]+back[0], p[1]+back[1]]);
+      return (stairMarks[String(g)] || []).find(m => pip(m.point, here) || edgeDist(m.point, here) <= 3);
+    };
+    const toK = (m, g) => { const o2 = frameOffset(d, g, k);
+      return [+(m.point[0]+o2[0]).toFixed(2), +(m.point[1]+o2[1]).toFixed(2)]; };
+    const loM = findAcc(String(k)), hiM = findAcc(String(k+1));
+    d.storeys[String(k)].staircases.push({
+      id: nextStairId(d, k), name: r.name || "Staircase", lo: k, hi: k + 1,
+      points: inK,
+      lower: loM ? toK(loM, String(k)) : inK[0],
+      upper: hiM ? toK(hiM, String(k+1)) : inK[inK.length-1],
+    });
+    if (loM) n.stairAcc++;
+    if (hiM) n.stairAcc++;
+  }
+}
+function repairNote(n) {
+  if (!n) return "";
+  const parts = [];
+  if (n.rects) parts.push(`${n.rects} rectangular venue${n.rects>1?"s":""} converted to parametric Rects`);
+  if (n.wc) parts.push(`${n.wc} restroom venue${n.wc>1?"s":""} categorised`);
+  if (n.restMarks) parts.push(`${n.restMarks} manual restroom marker${n.restMarks>1?"s":""} removed (now derived from venues)`);
+  if (n.exit) parts.push(`${n.exit} exit marker${n.exit>1?"s":""} merged into entrance`);
+  if (n.snapped) parts.push(`${n.snapped} entrance${n.snapped>1?"s":""} snapped to venue edge`);
+  if (n.legacy) parts.push(`${n.legacy} venue${n.legacy>1?"s":""} remapped from legacy category slugs`);
+  if (n.stairs) parts.push(`${n.stairs} staircase venue${n.stairs>1?"s":""} converted to stair runs (one line per adjacent floor pair)`);
+  if (n.stairMarks)
+    parts.push(`${n.stairMarks} old staircase marker${n.stairMarks>1?"s":""} folded into stair-run access points`);
+  return parts.length ? "Repaired: " + parts.join(" · ") + "." : "";
+}
+
 /* ---------- svg helpers ---------- */
 const NS = "http://www.w3.org/2000/svg", stage = document.getElementById("stage");
 const el = (tag, attrs, parent) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); (parent||stage).appendChild(e); return e; };
@@ -394,8 +1025,14 @@ function adjustAspect() {
   else { const nh = view.w/target; view.y -= (nh-view.h)/2; view.h = nh; }
 }
 function refresh(keepView) {
+  if (multi.length) {   // the multi-selection survives only while every unit does
+    multi = multi.filter(unitExists);
+    collapseMulti();
+  }
   if (sel) {
-    const ok = sel.kind === "room" ? !!roomsOf(floor)[sel.idx] : !!marksOf(floor)[sel.idx];
+    const ok = sel.kind === "room" ? !!roomsOf(selFloor())[sel.idx]
+             : sel.kind === "stair" ? !!stairsOf(selFloor())[sel.idx]
+             : !!marksOf(floor)[sel.idx];
     if (!ok) sel = null;
   }
   if (!view || !keepView) view = {...extents(floor)};
@@ -425,21 +1062,72 @@ function refresh(keepView) {
   if (document.getElementById("cGrid").checked) drawGrid();   // layer 5: under every shape
   const gR = el("g", {id:"rooms"});
   const u = view.w / Math.max(1, stage.clientWidth);   // svg units per screen px
+  const mR = 11*u, mS = 15*u/960;                      // ~22 px disc, constant on-screen size
+  const stairBad = stairIssues();   // runs missing an access point render red (see feature semantics)
   const sorted = [...roomsOf(floor)].map((r,i)=>({r,i})).sort((a,b)=>(ORD[a.r.type]??5)-(ORD[b.r.type]??5));
   for (const {r,i} of sorted) {
-    const g = el("g", {class:"room t-"+r.type+(sel&&sel.kind==="room"&&sel.idx===i?" sel":""), "data-i":i}, gR);
+    const g = el("g", {class:"room t-"+r.type+(selCoversShape("room", floor, i, r.id)?" sel":""), "data-i":i}, gR);
     el("path", {d:roomD(r)}, g);
     const c = defaultLabelPos(r);
     const t = el("text", {x:c[0].toFixed(2), y:c[1].toFixed(2), "font-size":(u*11.5).toFixed(2), class:"lbl", "data-i":i}, g);
     t.textContent = r.name;
   }
+  // multi-level rooms (height ≥ 2): ref-aligned copies on the levels they span —
+  // fully editable (selecting one selects the home room; the readout names the
+  // storey it lives on). Native rooms of this floor take precedence below mirrors.
+  for (const m of roomMirrorsOn(floor)) {
+    const hr = roomsOf(m.mirroredFrom)[m.homeIdx];
+    const isSel = selCoversShape("room", m.mirroredFrom, m.homeIdx, m.id);
+    const g = el("g", {class:"room t-"+m.type+" mirrored"+(isSel?" sel":""),
+                       "data-mf":m.mirroredFrom, "data-mi":m.homeIdx}, gR);
+    el("path", {d:roomD(m)}, g);
+    const c = defaultLabelPos(m);
+    const t = el("text", {x:c[0].toFixed(2), y:c[1].toFixed(2), "font-size":(u*11.5).toFixed(2), class:"lbl"}, g);
+    t.textContent = m.name;
+  }
   stage.appendChild(gR);
+  // staircase runs: a line renders on BOTH floors of its adjacent pair (the
+  // upper floor sees a ref-aligned mirror); each access icon shows only on its
+  // own floor, badged with the floor it leads to. Mirrored runs are fully
+  // editable — selecting one selects the home run (sel.homeFloor/shift).
+  const gS = el("g", {id:"stairs"});
+  for (const v of stairViewsOn(floor)) {
+    const selH = selCoversShape("stair", v.home, v.idx, v.s.id);
+    const g = el("g", {class:"stair" + (selH ? " sel" : "") + (stairBad.has(v.home + ":" + v.idx) ? " bad" : ""),
+                       "data-home":v.home, "data-idx":v.idx}, gS);
+    if (stairBad.has(v.home + ":" + v.idx)) el("path", {class:"halo", d:polyD(v.pts)}, g);
+    el("path", {class:"casing", d:polyD(v.pts)}, g);
+    el("path", {class:"run", d:polyD(v.pts)}, g);
+    el("path", {class:"hit", d:polyD(v.pts)}, g);
+    const acc = v.mirrored ? v.upper : v.lower;   // lower access lives on lo, upper on hi
+    if (acc) {
+      const ag = el("g", {class:"mk stair stairacc", transform:`translate(${acc[0]},${acc[1]})`, "pointer-events":"none"}, g);
+      markerGlyph(ag, "stair", mR, mS);
+      const bt = el("text", {class:"badge", y:(mR*1.9).toFixed(2), "font-size":(u*10).toFixed(2)}, ag);
+      bt.textContent = v.mirrored ? "↓" + v.s.lo : "↑" + v.s.hi;
+    }
+  }
+  stage.appendChild(gS);
   const gM = el("g", {id:"markers"});
-  const mR = 11*u, mS = 15*u/960;                      // ~22 px disc, constant on-screen size
   marksOf(floor).forEach((m,i) => {
-    const g = el("g", {class:"mk "+m.kind+(sel&&sel.kind==="marker"&&sel.idx===i?" sel":""), transform:`translate(${m.point[0]},${m.point[1]})`, "data-i":i}, gM);
+    const g = el("g", {class:"mk "+m.kind+(selCoversShape("marker", floor, i, m.id)?" sel":""), transform:`translate(${m.point[0]},${m.point[1]})`, "data-i":i}, gM);
     markerGlyph(g, m.kind, mR, mS);
   });
+  // restroom markers are derived, never stored: every restroom venue shows one
+  // at its centroid; not selectable (pointer-events none), follows venue edits.
+  // Multi-level restrooms show the derived icon on every level they span.
+  roomsOf(floor).forEach(r => {
+    if (r.type !== "restroom" && r.type !== "wc") return;
+    const c = defaultLabelPos(r);
+    const g = el("g", {class:"mk restroom derived", transform:`translate(${c[0]},${c[1]})`, "pointer-events":"none"}, gM);
+    markerGlyph(g, "restroom", mR, mS);
+  });
+  for (const m of roomMirrorsOn(floor)) {
+    if (m.type !== "restroom" && m.type !== "wc") continue;
+    const c = defaultLabelPos(m);
+    const g = el("g", {class:"mk restroom derived", transform:`translate(${c[0]},${c[1]})`, "pointer-events":"none"}, gM);
+    markerGlyph(g, "restroom", mR, mS);
+  }
   stage.appendChild(gM);
   // alignment reference point (editor-only, saved per floor in the data):
   // every floor marks the same physical spot; level switches align on them.
@@ -458,21 +1146,34 @@ function refresh(keepView) {
     t.textContent = "ref";
     stage.appendChild(gF);
   }
-  if (sel && sel.kind === "room") { if (roomsOf(floor)[sel.idx].shape) drawShapeHandles(); else drawVertexHandles(); }
+  if (sel && sel.kind === "room" && selRoom()) {
+    if (selRoom().shape) drawShapeHandles(sel.shift); else drawVertexHandles(sel.shift);
+  }
+  if (sel && sel.kind === "stair" && selStair()) drawStairHandles(sel.shift);
+  if (!sel && multi.length === 1 && multi[0].kind === "group") drawGroupHandles();
+  if (drag && drag.snapTarget) {   // vertex snap feedback: green ring on the target vertex
+    const g = el("g", {id:"snapmark"});
+    el("circle", {cx: drag.snapTarget[0].toFixed(2), cy: drag.snapTarget[1].toFixed(2), r: (view.w/80).toFixed(2),
+                  fill:"none", stroke:"#66bb6a", "stroke-width":(view.w/400).toFixed(2)}, g);
+    stage.appendChild(g);
+  }
   if (draft) drawDraft();
   renderLegend();   // layer 2: drawn last, above every shape; pointer-events:none
   document.getElementById("bUndo").disabled = !history.length;
   document.getElementById("bRedo").disabled = !future.length;
-  document.getElementById("bDelete").disabled = !sel;
-  document.getElementById("bDup").disabled = !sel;
+  document.getElementById("bDelete").disabled = !sel && !multi.length;
+  document.getElementById("bDup").disabled = !sel && !multi.length;
+  document.getElementById("bGroup").disabled = multi.length < 2;
+  document.getElementById("bUngroup").disabled = !multi.some(u => u.kind === "group");
   updateScaleBar();
-  const nR = roomsOf(floor).length, nM = marksOf(floor).length;
+  const nR = roomsOf(floor).length, nM = marksOf(floor).length, nS = stairsOf(floor).length;
   const sto = Object.keys(data.storeys);
   const nRef = sto.filter(f => data.storeys[f].ref).length;
   document.getElementById("dataInfo").textContent =
-    `Floor ${floor}: ${nR} venues, ${nM} markers. Source: ${(data.site && data.site.source) || "embedded"}.\n` +
+    `Floor ${floor}: ${nR} venues, ${nM} markers, ${nS} staircases. Source: ${(data.site && data.site.source) || "embedded"}.\n` +
     `Reference points: ${nRef}/${sto.length} floors — level switches align on them.` +
     (localStorage.getItem(LS_KEY) ? "\nAutosaved edits loaded (Reset restores original)." : "\nOriginal data (unsaved edits go to localStorage).");
+  renderToolPanel();
   updateProps();
 }
 function markerGlyph(g, kind, R, gs) {
@@ -482,8 +1183,9 @@ function markerGlyph(g, kind, R, gs) {
   el("circle", {class:"disc", r:R}, g);
   el("path", {class:"glyph", d:GLYPH[kind], transform:`scale(${gs}) translate(-480 480)`}, g);
 }
-function drawVertexHandles() {
-  const r = roomsOf(floor)[sel.idx], g = el("g", {id:"vhandles"});
+function drawVertexHandles(shift) {
+  const r = selRoom(), g = el("g", {id:"vhandles"});
+  if (shift) g.setAttribute("transform", `translate(${shift[0]} ${shift[1]})`);
   r.outline.forEach((p, vi) => {
     const c = el("circle", {class:"vtx", cx:p[0], cy:p[1], r:(view.w/220).toFixed(3), "data-vi":vi}, g);
     if (sel.vtx === vi) c.setAttribute("r", (view.w/130).toFixed(3));
@@ -495,21 +1197,35 @@ function drawVertexHandles() {
   }
   stage.appendChild(g);
 }
-function drawShapeHandles() {
-  const r = roomsOf(floor)[sel.idx], s = r.shape, g = el("g", {id:"shandles"});
+function drawStairHandles(shift) {   // run nodes (amber) + insert points (blue +)
+  const s = selStair(), g = el("g", {id:"stairhandles"});
+  if (shift) g.setAttribute("transform", `translate(${shift[0]} ${shift[1]})`);
+  s.points.forEach((p, vi) => {
+    const c = el("circle", {class:"vtx", cx:p[0], cy:p[1], r:(view.w/220).toFixed(3), "data-vi":vi}, g);
+    if (sel.vtx === vi) c.setAttribute("r", (view.w/130).toFixed(3));
+  });
+  for (let i = 1; i < s.points.length; i++) {
+    const a = s.points[i-1], b = s.points[i];
+    el("circle", {class:"vtx new", cx:(a[0]+b[0])/2, cy:(a[1]+b[1])/2, r:(view.w/320).toFixed(3), "data-edge":i-1}, g);
+  }
+  stage.appendChild(g);
+}
+const resizeCursor = deg => {          // nearest of the 8 resize cursors
+  const a = ((deg % 180) + 180) % 180;
+  if (a < 22.5 || a >= 157.5) return "ew-resize";
+  if (a < 67.5) return "nesw-resize";
+  if (a < 112.5) return "ns-resize";
+  return "nwse-resize";
+};
+const angOf = (vx, vy) => Math.atan2(vy, vx) * DEG;
+function drawShapeHandles(shift) {
+  const r = selRoom(), s = r.shape, g = el("g", {id:"shandles"});
+  if (shift) g.setAttribute("transform", `translate(${shift[0]} ${shift[1]})`);
   const hr = view.w/220;
   const lbl = (x, y, t) => {
     const e = el("text", {class:"shp-lbl", x, y, "font-size":view.w/95, "text-anchor":"middle", "stroke-width":view.w/700}, g);
     e.textContent = t;
   };
-  const resizeCursor = deg => {          // nearest of the 8 resize cursors
-    const a = ((deg % 180) + 180) % 180;
-    if (a < 22.5 || a >= 157.5) return "ew-resize";
-    if (a < 67.5) return "nesw-resize";
-    if (a < 112.5) return "ns-resize";
-    return "nwse-resize";
-  };
-  const angOf = (vx, vy) => Math.atan2(vy, vx) * DEG;
   if (s.kind === "rect") {
     const u = [Math.cos(s.rot*RAD), Math.sin(s.rot*RAD)], v = [-u[1], u[0]];
     const at = (a, b) => [s.c[0] + a*s.w/2*u[0] + b*s.h/2*v[0], s.c[1] + a*s.w/2*u[1] + b*s.h/2*v[1]];
@@ -537,7 +1253,6 @@ function drawShapeHandles() {
       const d = Math.hypot(p[0]-s.c[0], p[1]-s.c[1]) || 1;
       lbl(p[0] + (p[0]-s.c[0])/d*hr*3.4, p[1] + (p[1]-s.c[1])/d*hr*3.4 + view.w/380, t);
     };
-    el("circle", {class:"shp center", cx:s.c[0], cy:s.c[1], r:hr, style:"cursor:move", "data-sh":"center"}, g);
     const pOut = P(mid, s.rOut);
     el("circle", {class:"shp rout", cx:pOut[0], cy:pOut[1], r:hr, style:`cursor:${resizeCursor(angOf(pOut[0]-s.c[0], pOut[1]-s.c[1]))}`, "data-sh":"rout"}, g);
     outLbl(pOut, "outer");
@@ -552,6 +1267,8 @@ function drawShapeHandles() {
                   transform:`rotate(45 ${p[0]} ${p[1]})`, style:"cursor:grab", "data-sh":which}, g);
       outLbl(p, t);
     }
+    // centre handle drawn LAST so it wins press overlaps with rin/rout on small rings
+    el("circle", {class:"shp center", cx:s.c[0], cy:s.c[1], r:hr, style:"cursor:move", "data-sh":"center"}, g);
   }
   stage.appendChild(g);
 }
@@ -559,7 +1276,8 @@ function drawDraft() {
   const g = el("g", {id:"draft"});
   if (draft.pts.length) {
     el("polyline", {class:"draw-preview", points:draft.pts.map(p=>p.join(",")).join(" ")}, g);
-    if (draft.pts.length > 2) el("line", {class:"draw-preview", x1:draft.pts.at(-1)[0], y1:draft.pts.at(-1)[1], x2:draft.cur[0], y2:draft.cur[1]}, g);
+    if (draft.stair && draft.cur)   // rubber line to the cursor (open run, never closes)
+      el("line", {class:"draw-preview", x1:draft.pts.at(-1)[0], y1:draft.pts.at(-1)[1], x2:draft.cur[0], y2:draft.cur[1]}, g);
     if (draft.rect && draft.pts.length === 1) {
       const [x0,y0] = draft.pts[0], [x1,y1] = draft.cur;
       el("rect", {class:"draw-preview", x:Math.min(x0,x1), y:Math.min(y0,y1), width:Math.abs(x1-x0), height:Math.abs(y1-y0)}, g);
@@ -568,7 +1286,7 @@ function drawDraft() {
       const [x0,y0] = draft.pts[0];
       el("circle", {class:"draw-preview", cx:x0, cy:y0, r:Math.hypot(draft.cur[0]-x0, draft.cur[1]-y0), "stroke-width":view.w/700}, g);
     }
-    draft.pts.forEach(p => el("circle", {cx:p[0], cy:p[1], r:view.w/300, fill:"#ff2f2f"}, g));
+    draft.pts.forEach(p => el("circle", {cx:p[0], cy:p[1], r:view.w/300, fill:"#4da3ff"}, g));
   }
   stage.appendChild(g);
 }
@@ -590,12 +1308,25 @@ function renderLegend() {
   const fsT = u*13, fs = u*11.5, rowH = u*17;
   const lx = view.x + u*12, panelTop = view.y + u*8;
   const ty = panelTop + u*20, firstRow = ty + u*18;
-  // only categories and marker kinds actually present on this floor, canonical order
+  // only categories and marker kinds actually present on this floor, canonical
+  // order — multi-level rooms (height mirrors) count as present on each level.
+  // Restrooms appear ONLY as their derived marker row: the venues carry no
+  // category shading, so there is no swatch row for them
+  const mirrors = roomMirrorsOn(floor);
   const used = new Set(roomsOf(floor).map(r => r.type));
-  const items = [...VENUE_CATS.map(v => v[0]), ...STRUCTURAL.map(v => v[0]), ...LEGACY_TYPES].filter(t => used.has(t));
-  const kinds = MKINDS.filter(k => marksOf(floor).some(m => m.kind === k));
+  for (const m of mirrors) used.add(m.type);
+  const items = [...VENUE_CATS.map(v => v[0]), ...STRUCTURAL.map(v => v[0])]
+    .filter(t => used.has(t) && t !== "restroom" && t !== "wc");
+  // restroom markers are derived from venues (home + mirrored); other kinds from
+  // placed markers; staircases are line features — shown when a run touches this floor
+  const kinds = MKINDS.filter(k => k === "restroom"
+    ? roomsOf(floor).some(r => r.type === "restroom" || r.type === "wc") ||
+      mirrors.some(m => m.type === "restroom" || m.type === "wc")
+    : marksOf(floor).some(m => m.kind === k));
+  const hasStair = stairViewsOn(floor).length > 0;
+  const nRows = kinds.length + (hasStair ? 1 : 0);
   const panelH = (firstRow - panelTop) + items.length*rowH +
-                 (kinds.length ? u*5 + kinds.length*rowH : 0) + u*10;
+                 (nRows ? u*5 + nRows*rowH : 0) + u*10;
   const g = el("g", {id:"legend", "font-family":"Arial", fill:"#dfe6f0", "pointer-events":"none"});
   el("rect", {x:lx - u*8, y:panelTop, width:u*250, height:panelH, rx:u*6,
               fill:"rgba(17,23,33,0.8)", stroke:"#3a4356", "stroke-width":u}, g);
@@ -611,8 +1342,14 @@ function renderLegend() {
     const gg = el("g", {class:"mk "+k, transform:`translate(${lx+u*7.5},${my+i*rowH+u*2})`}, g);
     markerGlyph(gg, k, u*7.5, u*10.5/960);          // 15 px disc inside a 17 px row
     el("text", {x:lx+u*19, y:my+i*rowH+u*6, "font-size":fs, fill:"#dfe6f0"}, g).textContent =
-      {restroom:"Restroom", stair:"Staircase", lift:"Elevator", entrance:"Entrance", exit:"Exit"}[k];
+      {restroom:"Restroom", lift:"Elevator", entrance:"Entrance"}[k];
   });
+  if (hasStair) {
+    const yy = my + kinds.length*rowH;
+    const gg = el("g", {class:"mk stair", transform:`translate(${lx+u*7.5},${yy+u*2})`}, g);
+    markerGlyph(gg, "stair", u*7.5, u*10.5/960);
+    el("text", {x:lx+u*19, y:yy+u*6, "font-size":fs, fill:"#dfe6f0"}, g).textContent = "Staircase";
+  }
 }
 
 /* ---------- scale bar + zoom ratio ---------- */
@@ -646,8 +1383,14 @@ function showZoomRF() {
 /* ---------- ui plumbing ---------- */
 const $ = id => document.getElementById(id);
 function status(msg, cls) { const s = $("status"); s.textContent = msg; s.className = cls||""; }
-function selRoom() { return sel && sel.kind === "room" ? roomsOf(floor)[sel.idx] : null; }
+function selFloor() { return sel && sel.homeFloor != null ? sel.homeFloor : floor; }
+function selRoom() {   // a selected staircase mirror targets the venue on its home floor
+  return sel && sel.kind === "room" ? roomsOf(selFloor())[sel.idx] || null : null;
+}
 function selMark() { return sel && sel.kind === "marker" ? marksOf(floor)[sel.idx] : null; }
+function selStair() {   // a selected staircase mirror targets the run on its home (lower) floor
+  return sel && sel.kind === "stair" ? stairsOf(selFloor())[sel.idx] || null : null;
+}
 const obbOf = pts => {          // minimum-area oriented bounding rect (w, h) in units
   const n = pts.length;
   if (n < 3) { const [a,b] = bboxOf(pts); return [b[0]-a[0], b[1]-a[1]]; }
@@ -668,55 +1411,462 @@ const obbOf = pts => {          // minimum-area oriented bounding rect (w, h) in
   }
   return best || [0, 0];
 };
+
+/* ---------- multi-select & groups ----------
+   Shift+click builds a multi-selection of UNITS — a plain shape or a whole
+   group (clicking any member selects its group; double-click drills into the
+   member). Units move together by mouse and arrow keys; resizing is only
+   allowed for a lone GROUP selection: its bounding box gets 8 handles and
+   dragging one scales every member (geometry AND position proportionally)
+   around the fixed anchor corner/edge. */
+function selToUnit(s) { return {kind:s.kind, idx:s.idx, homeFloor:s.homeFloor, shift:s.shift}; }
+function unitEq(a, b) {
+  if (a.kind !== b.kind) return false;
+  if (a.kind === "group") return a.id === b.id;
+  const fa = String(a.homeFloor != null ? a.homeFloor : floor);
+  const fb = String(b.homeFloor != null ? b.homeFloor : floor);
+  return a.idx === b.idx && fa === fb;
+}
+function selectionHas(u) { return (sel && unitEq(sel, u)) || multi.some(v => unitEq(v, u)); }
+function unitExists(u) {
+  if (u.kind === "group") return !!groupById(u.homeFloor, u.id);
+  const fl = u.homeFloor != null ? u.homeFloor : floor;
+  const arr = u.kind === "room" ? roomsOf(fl) : u.kind === "stair" ? stairsOf(fl) : marksOf(floor);
+  return !!arr[u.idx];
+}
+function collapseMulti() {   // one plain unit left → back to full single selection
+  if (multi.length === 1 && multi[0].kind !== "group") {
+    const u = multi[0];
+    sel = {kind:u.kind, idx:u.idx, homeFloor:u.homeFloor, vtx:null,
+           shift: u.homeFloor != null ? frameOffset(data, u.homeFloor, floor) : null};
+    multi = [];
+  }
+}
+function selectAsUnit(u) {   // plain click: a grouped shape always selects its group
+  if (u.kind === "group") { sel = null; multi = [u]; return; }
+  sel = u.kind === "marker"
+    ? {kind:"marker", idx:u.idx, vtx:null}
+    : {kind:u.kind, idx:u.idx, homeFloor:u.homeFloor, vtx:null,
+       shift: u.homeFloor != null ? frameOffset(data, u.homeFloor, floor) : null};
+  multi = [];
+}
+function toggleSelectionUnit(u) {   // shift+click: add to / remove from the selection
+  if (sel && unitEq(sel, u)) { sel = null; return; }   // selected shape → unselect
+  const i = multi.findIndex(v => unitEq(v, u));
+  if (i >= 0) { multi.splice(i, 1); collapseMulti(); return; }
+  if (sel) { multi = [selToUnit(sel), u]; sel = null; return; }
+  multi.push(u);
+  collapseMulti();   // a first lone PLAIN click-select behaves as a single selection
+}
+function selCoversShape(kind, hf, idx, id) {   // render helper: is this shape highlighted?
+  const fl = String(hf != null ? hf : floor);
+  if (sel && sel.kind === kind && String(selFloor()) === fl && sel.idx === idx) return true;
+  for (const u of multi) {
+    if (u.kind === kind && String(u.homeFloor != null ? u.homeFloor : floor) === fl && u.idx === idx) return true;
+    if (u.kind === "group" && String(u.homeFloor) === fl) {
+      const g = groupById(u.homeFloor, u.id);
+      if (g && g.members.some(m => m.kind === kind && m.id === id)) return true;
+    }
+  }
+  return false;
+}
+function hitSelectionUnit(h) {   // pressed shape → {unit, plain}; unit is the group for members
+  const mirShift = hf => +hf !== +floor ? frameOffset(data, hf, floor) : null;
+  if (h.stg) {
+    const hf = h.stg.dataset.home, i = +h.stg.dataset.idx;
+    const s = (data.storeys[hf].staircases || [])[i];
+    if (!s) return null;
+    const g = s.id ? groupOfShape(hf, "stair", s.id) : null;
+    const plain = {kind:"stair", idx:i, homeFloor: +hf === +floor ? null : hf, shift: mirShift(hf)};
+    return g ? {unit:{kind:"group", id:g.id, homeFloor:String(hf), shift:mirShift(hf)}, plain} : {unit:plain, plain};
+  }
+  if (h.mk) {
+    const i = +h.mk.dataset.i, m = marksOf(floor)[i];
+    if (!m) return null;
+    const g = m.id ? groupOfShape(floor, "marker", m.id) : null;
+    const plain = {kind:"marker", idx:i};
+    return g ? {unit:{kind:"group", id:g.id, homeFloor:String(floor), shift:null}, plain} : {unit:plain, plain};
+  }
+  if (h.mm) {
+    const hf = h.mm.dataset.mf, mi = +h.mm.dataset.mi, hr = roomsOf(hf)[mi];
+    if (!hr) return null;
+    const g = hr.id ? groupOfShape(hf, "room", hr.id) : null;
+    const plain = {kind:"room", idx:mi, homeFloor:hf, shift:frameOffset(data, hf, floor)};
+    return g ? {unit:{kind:"group", id:g.id, homeFloor:String(hf), shift:frameOffset(data, hf, floor)}, plain} : {unit:plain, plain};
+  }
+  if (h.rm) {
+    const i = +h.rm.dataset.i, r = roomsOf(floor)[i];
+    if (!r) return null;
+    const g = r.id ? groupOfShape(floor, "room", r.id) : null;
+    const plain = {kind:"room", idx:i};
+    return g ? {unit:{kind:"group", id:g.id, homeFloor:String(floor), shift:null}, plain} : {unit:plain, plain};
+  }
+  return null;
+}
+/* the selection (single or multi) flattened into concrete shape ITEMS, deduped:
+   {kind, fl (home storey), idx, obj (live data ref), off (home→display offset)} */
+function resolvedItems() {
+  const out = [], seen = new Set();
+  const addId = (kind, fl, id, off) => {
+    const key = kind + ":" + id;
+    if (seen.has(key)) return;
+    const arr = kind === "room" ? roomsOf(fl) : kind === "stair" ? stairsOf(fl) : marksOf(fl);
+    const idx = arr.findIndex(o => o.id === id);
+    if (idx < 0) return;
+    seen.add(key);
+    out.push({kind, fl:String(fl), idx, obj:arr[idx], off: off || [0, 0]});
+  };
+  const addUnit = u => {
+    if (u.kind === "group") {
+      const g = groupById(u.homeFloor, u.id);
+      if (g) for (const m of g.members) addId(m.kind, u.homeFloor, m.id, u.shift || [0, 0]);
+      return;
+    }
+    const fl = u.kind === "marker" ? floor : (u.homeFloor != null ? u.homeFloor : floor);
+    const arr = u.kind === "room" ? roomsOf(fl) : u.kind === "stair" ? stairsOf(fl) : marksOf(fl);
+    const o = arr[u.idx];
+    if (!o) return;
+    if (o.id) addId(u.kind, fl, o.id, u.shift || [0, 0]);
+    else {   // id-less shape (shouldn't happen post-repair): resolve by index
+      const key = u.kind + ":#" + u.idx;
+      if (seen.has(key)) return;
+      seen.add(key);
+      out.push({kind:u.kind, fl:String(fl), idx:u.idx, obj:o, off:u.shift || [0, 0]});
+    }
+  };
+  if (sel) addUnit(selToUnit(sel)); else multi.forEach(addUnit);
+  return out;
+}
+function currentGeom(it) {   // live geometry of an item (home frame)
+  return it.kind === "room" ? {outline: it.obj.outline, shape: it.obj.shape}
+       : it.kind === "stair" ? {points: it.obj.points}
+       : {point: it.obj.point};
+}
+function itemDispPts(kind, geom, off, forBbox) {   // geometry points in DISPLAY frame
+  const t = p => [p[0] + off[0], p[1] + off[1]];
+  if (kind === "room") {
+    if (geom.shape) {
+      const s = geom.shape;
+      if (s.kind === "ring") {
+        const c = t(s.c);
+        return forBbox ? [[c[0]-s.rOut, c[1]], [c[0]+s.rOut, c[1]], [c[0], c[1]-s.rOut], [c[0], c[1]+s.rOut]] : [c];
+      }
+      return rectCorners(s).map(t);
+    }
+    return geom.outline.map(t);
+  }
+  if (kind === "stair") return (geom.points || []).map(t);
+  return geom.point ? [t(geom.point)] : [];
+}
+function origGeometry(it) {   // deep copy taken when a multi drag starts
+  if (it.kind === "room")
+    return {outline: it.obj.outline.map(p => p.slice()),
+            shape: it.obj.shape ? JSON.parse(JSON.stringify(it.obj.shape)) : null};
+  if (it.kind === "stair")
+    return {points: it.obj.points.map(p => p.slice()),
+            lower: it.obj.lower && it.obj.lower.slice(), upper: it.obj.upper && it.obj.upper.slice()};
+  return {point: it.obj.point.slice()};
+}
+function applyItemDelta(it, dx, dy) {   // translate one item from its orig (translation
+  if (!it.orig) it.orig = origGeometry(it);   // nudges resolve fresh items — snapshot first
+  const o = it.orig;                     // is frame-invariant, so dx/dy apply to home coords)
+  if (it.kind === "room") {
+    const t = p => [+(p[0]+dx).toFixed(2), +(p[1]+dy).toFixed(2)];
+    if (o.shape) {
+      it.obj.shape = JSON.parse(JSON.stringify(o.shape));
+      it.obj.shape.c = t(o.shape.c);
+      applyShape(it.obj);
+    } else it.obj.outline = o.outline.map(t);
+  } else if (it.kind === "stair") {
+    const t = p => p && [+(p[0]+dx).toFixed(2), +(p[1]+dy).toFixed(2)];
+    it.obj.points = o.points.map(t);
+    it.obj.lower = t(o.lower); it.obj.upper = t(o.upper);
+  } else {
+    it.obj.point = [+(o.point[0]+dx).toFixed(2), +(o.point[1]+dy).toFixed(2)];
+    enforceEntrance(it.obj, roomsOf(it.fl));
+  }
+}
+function applyItemScale(it, anchor, u, v, kx, ky) {   // scale one item from its orig about the
+  const o = it.orig;                                    // display-frame anchor ALONG AXES u/v (the
+  const S = p => {                                      // group's own frame when group.rot is set);
+    const dx = p[0]-anchor[0], dy = p[1]-anchor[1];     // writes back to the home frame
+    const s = (dx*u[0] + dy*u[1]) * kx, t = (dx*v[0] + dy*v[1]) * ky;
+    return [anchor[0] + s*u[0] + t*v[0], anchor[1] + s*u[1] + t*v[1]];
+  };
+  const W = p => { const q = S([p[0]+it.off[0], p[1]+it.off[1]]);
+                   return [+(q[0]-it.off[0]).toFixed(2), +(q[1]-it.off[1]).toFixed(2)]; };
+  if (it.kind === "room") {
+    if (o.shape) {
+      const s = JSON.parse(JSON.stringify(o.shape));
+      if (s.kind === "rect") { s.w = +(s.w*kx).toFixed(2); s.h = +(s.h*ky).toFixed(2); }
+      else {   // rings stay circles: scale radii by the geometric mean (positions
+        const k = Math.max(Math.sqrt(kx*ky), 0.5/Math.max(o.shape.rOut, 1e-6));   // still scale per-axis)
+        s.rOut = +(s.rOut*k).toFixed(2);
+        if (s.rIn) s.rIn = +(s.rIn*k).toFixed(2);
+      }
+      s.c = W(s.c);
+      it.obj.shape = s;
+      applyShape(it.obj);
+    } else {
+      it.obj.outline = o.outline.map(W);
+      it.obj.area_m2 = +(area(it.obj.outline)*SCALE*SCALE).toFixed(1);
+      const [a, b] = bboxOf(it.obj.outline);
+      it.obj.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
+    }
+  } else if (it.kind === "stair") {   // scaling maps the run line to a line, so the
+    const t = p => p && W(p);          // access points stay on it without re-projecting
+    it.obj.points = o.points.map(t);
+    it.obj.lower = t(o.lower); it.obj.upper = t(o.upper);
+  } else {
+    it.obj.point = W(o.point);
+    enforceEntrance(it.obj, roomsOf(it.fl));
+  }
+}
+/* the lone selected group's ORIENTED bounding-box frame (display coords): u/v are
+   the group axes — group.rot when the group is rotation-aligned, world axes
+   otherwise. Everything about group resize (handles, pointer math, the Box
+   size fields) works in this frame, so a row of rotated classrooms resizes
+   along its OWN axes instead of the screen's. */
+function groupFrame() {
+  const g = multi.length === 1 && multi[0].kind === "group"
+    ? groupById(multi[0].homeFloor, multi[0].id) : null;
+  if (!g) return null;
+  const items = resolvedItems();
+  const pts = items.flatMap(it => itemDispPts(it.kind, currentGeom(it), it.off, true));
+  if (!pts.length) return null;
+  const rot = g.rot || 0;
+  const u = [Math.cos(rot*RAD), Math.sin(rot*RAD)], v = [-u[1], u[0]];
+  let sMin = 1e18, sMax = -1e18, tMin = 1e18, tMax = -1e18;
+  for (const p of pts) {
+    const s = p[0]*u[0] + p[1]*u[1], t = p[0]*v[0] + p[1]*v[1];
+    sMin = Math.min(sMin, s); sMax = Math.max(sMax, s);
+    tMin = Math.min(tMin, t); tMax = Math.max(tMax, t);
+  }
+  const cs = (sMin+sMax)/2, ct = (tMin+tMax)/2;
+  const hw = (sMax-sMin)/2, hh = (tMax-tMin)/2;
+  return {g, rot, u, v, w:sMax-sMin, h:tMax-tMin,
+          c:[cs*u[0] + ct*v[0], cs*u[1] + ct*v[1]],
+          at: (su, sv) => [cs*u[0] + ct*v[0] + su*hw*u[0] + sv*hh*v[0],
+                           cs*u[1] + ct*v[1] + su*hw*u[1] + sv*hh*v[1]]};
+}
+function drawGroupHandles() {   // the lone selected group: dashed bbox + 8 resize handles,
+  const f = groupFrame();        // drawn in the group's OWN frame (rotated with group.rot)
+  if (!f) return;
+  const g = el("g", {id:"ghandles"});
+  const hr = view.w/220;
+  el("path", {class:"gbbox", d: toD([f.at(-1,-1), f.at(1,-1), f.at(1,1), f.at(-1,1)])}, g);
+  for (const [su, sv] of [[-1,-1],[1,-1],[1,1],[-1,1]]) {
+    const p = f.at(su, sv);
+    el("rect", {class:"shp corner ghandle", x:(p[0]-hr).toFixed(2), y:(p[1]-hr).toFixed(2),
+                width:(2*hr).toFixed(2), height:(2*hr).toFixed(2),
+                transform:`rotate(${f.rot.toFixed(1)} ${p[0].toFixed(2)} ${p[1].toFixed(2)})`,
+                style:`cursor:${resizeCursor(angOf(su*f.u[0] + sv*f.v[0], su*f.u[1] + sv*f.v[1]))}`,
+                "data-gh":"corner", "data-su":su, "data-sv":sv}, g);
+  }
+  for (const [ax, sg] of [["u",-1],["u",1],["v",-1],["v",1]]) {
+    const dir = ax === "u" ? f.u : f.v;
+    const p = ax === "u" ? f.at(sg, 0) : f.at(0, sg);
+    el("circle", {class:"shp side ghandle", cx:p[0].toFixed(2), cy:p[1].toFixed(2), r:hr.toFixed(3),
+                  style:`cursor:${resizeCursor(angOf(sg*dir[0], sg*dir[1]))}`,
+                  "data-gh":"side", "data-ax":ax, "data-sg":sg}, g);
+  }
+  stage.appendChild(g);
+}
+function alignRoomTo(r, rot) {   // put one room on an exact rotation: rects set shape.rot;
+  if (r.shape && r.shape.kind === "rect") {   // polygons swing about their area centroid
+    r.shape.rot = +norm360(rot).toFixed(1);
+    applyShape(r);
+    return;
+  }
+  if (r.shape) return;   // rings have no orientation
+  const o = obbFull(r.outline), cen = areaCentroid(r.outline);
+  const d = (norm360(rot) - norm360(o.rot)) * RAD;
+  const cosd = Math.cos(d), sind = Math.sin(d);
+  r.outline = r.outline.map(p => {
+    const dx = p[0]-cen[0], dy = p[1]-cen[1];
+    return [+(cen[0] + dx*cosd - dy*sind).toFixed(2), +(cen[1] + dx*sind + dy*cosd).toFixed(2)];
+  });
+  r.area_m2 = +(area(r.outline)*SCALE*SCALE).toFixed(1);
+  const [a, b] = bboxOf(r.outline);
+  r.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
+}
+function alignGroupRooms(g, rot, fl) {   // every ROOM in the group takes the exact rotation —
+  g.rot = rot;                            // markers and stair runs have no orientation and
+  for (const m of g.members) {            // keep their positions; the bbox angle follows
+    if (m.kind !== "room") continue;
+    const r = roomsOf(fl).find(o => o.id === m.id);
+    if (r) alignRoomTo(r, rot);
+  }
+}
+
 function updateProps() {
-  const r = selRoom(), m = selMark(), ro = $("readout"), pr = $("props");
+  const r = selRoom(), m = selMark(), sc = selStair(), ro = $("readout"), pr = $("props");
+  $("grpProps").style.display = "none";   // reset; the group branch re-shows it
   if (r) {
     const [uw, uh] = obbOf(r.outline);
     const w = (uw*SCALE).toFixed(1), d = (uh*SCALE).toFixed(1);
     const ar = (r.area_m2 != null ? r.area_m2 : area(r.outline)*SCALE*SCALE).toFixed(1);
+    const h = r.height || 1;
+    const [sLo, sHi] = heightSpan(r, selFloor());
+    const hNote = h > 1
+      ? `<div>spans levels ${sLo}–${sHi}${sHi < sLo + h - 1 ? " (building ends there)" : ""}</div>` : "";
+    const via = sel.homeFloor != null
+      ? `<div style="color:#9ecdff">defined on storey ${sel.homeFloor} — mirrored here; edits apply there</div>` : "";
     ro.innerHTML = `<div class="big">${w} m × ${d} m</div><div>area ≈ ${ar} m² · ${(r.shape
       ? (r.shape.kind === "rect"
           ? `rot ${Math.round(r.shape.rot)}°`
           : `R ${(r.shape.rOut*SCALE).toFixed(1)} m` + (r.shape.rIn ? ` / r ${(r.shape.rIn*SCALE).toFixed(1)} m` : "") + `, ${Math.round(sweepOf(r.shape))}° arc`)
-      : `${r.outline.length} vertices`)}</div>`;
+      : `${r.outline.length} vertices`)}</div>${hNote}${via}`;
     pr.style.display = "";
+    $("propGrid").style.display = "";
     $("pName").value = r.name; $("pType").value = r.type;
+    $("pHeight").value = String(h);
+    // direct text entry: length / width (m, 2 d.p.) and rotation (°, 1 d.p.) —
+    // rects edit shape.w/h/rot, polygons scale along their OBB axes / swing
+    // about the centroid; rings keep their handle editing
+    const rectish = !r.shape || r.shape.kind === "rect";
+    $("pSizeL").style.display = rectish ? "" : "none";
+    $("pSizeW").style.display = rectish ? "" : "none";
+    $("pRotL").style.display = rectish ? "" : "none";
+    $("pRot").style.display = rectish ? "" : "none";
+    if (rectish) {
+      let wm, dm, rt;
+      if (r.shape) { wm = r.shape.w*SCALE; dm = r.shape.h*SCALE; rt = norm360(r.shape.rot); }
+      else { const o = obbFull(r.outline); wm = o.w*SCALE; dm = o.h*SCALE; rt = norm360(o.rot); }
+      if (document.activeElement !== $("pW")) $("pW").value = wm.toFixed(2);
+      if (document.activeElement !== $("pD")) $("pD").value = dm.toFixed(2);
+      if (document.activeElement !== $("pRot")) $("pRot").value = rt.toFixed(1);
+    }
     if (r.shape) {
       $("vtxBtns").style.display = "none";
-      $("cvtBtns").style.display = "none";
+      $("cvtBtns").style.display = "flex";   // → Polygon (one-way)
       $("shapeNote").style.display = "";
     } else {
       $("vtxBtns").style.display = "";
-      $("cvtBtns").style.display = "flex";
+      $("cvtBtns").style.display = "none";   // polygons cannot convert back
       $("shapeNote").style.display = "none";
     }
-  } else if (m) {
-    ro.innerHTML = `<div>${m.name}</div><div>marker: ${m.kind}</div><div>at ${(m.point[0]*SCALE).toFixed(1)}, ${(m.point[1]*SCALE).toFixed(1)} m</div>`;
+  } else if (sc) {
+    const bad = stairIssues().has(selFloor() + ":" + sel.idx);
+    const acc = p => p ? `set (${(p[0]*SCALE).toFixed(1)}, ${(p[1]*SCALE).toFixed(1)}) m`
+                       : "<span style=\"color:#ff8a8a\">not set</span>";
+    const via = sel.homeFloor != null
+      ? `<div style="color:#9ecdff">defined on storey ${sel.homeFloor} — mirrored here; edits apply to the run and both access points</div>` : "";
+    ro.innerHTML = `<div class="big">${esc(sc.name || "Staircase")}</div>` +
+      `<div>levels ${sc.lo} → ${sc.hi} · run ${(polyLen(sc.points)*SCALE).toFixed(1)} m · ${sc.points.length} nodes</div>` +
+      `<div>lower access (lvl ${sc.lo}): ${acc(sc.lower)}</div>` +
+      `<div>upper access (lvl ${sc.hi}): ${acc(sc.upper)}</div>` +
+      (bad ? "<div style=\"color:#ff8a8a\">incomplete — place both access points (Staircase panel)</div>" : "") + via;
     pr.style.display = "none";
+  } else if (m) {
+    let warn = "";
+    if (m.kind === "entrance" && !venueAt(m.point, roomsOf(floor), ENTRANCE_TOL))
+      warn = "<div style=\"color:#ff8a8a\">not on a venue edge</div>";
+    ro.innerHTML = `<div>${m.name}</div><div>marker: ${m.kind}</div><div>at ${(m.point[0]*SCALE).toFixed(1)}, ${(m.point[1]*SCALE).toFixed(1)} m</div>${warn}`;
+    pr.style.display = "none";
+  } else if (!sel && multi.length) {
+    const g = multi.length === 1 && multi[0].kind === "group" ? groupById(multi[0].homeFloor, multi[0].id) : null;
+    const n = resolvedItems().length;
+    if (g) {
+      const f = groupFrame();
+      ro.innerHTML = `<div class="big">${esc(g.id)}</div>` +
+        (f ? `<div>box ${(f.w*SCALE).toFixed(2)} m × ${(f.h*SCALE).toFixed(2)} m · rot ${g.rot != null ? g.rot.toFixed(1) + "°" : "—"}</div>` : "") +
+        `<div>group of ${n} shape${n > 1 ? "s" : ""} — drag to move · the box handles resize along the group's own axes</div>` +
+        `<div>click a member to sub-select it · Ctrl+Shift+G dissolves the group</div>`;
+      $("propGrid").style.display = "none";
+      $("grpProps").style.display = "";
+      pr.style.display = "";
+      if (f) {
+        if (document.activeElement !== $("pGw")) $("pGw").value = (f.w*SCALE).toFixed(2);
+        if (document.activeElement !== $("pGd")) $("pGd").value = (f.h*SCALE).toFixed(2);
+        if (document.activeElement !== $("pGrot")) $("pGrot").value = g.rot != null ? g.rot.toFixed(1) : "";
+      }
+    } else {
+      ro.innerHTML = `<div class="big">${n} shapes selected</div><div>drag or ← ↑ → ↓ moves them together · no resize for loose multi-selections</div>` +
+        `<div>Ctrl+G groups them · Shift+click adds / removes</div>`;
+      pr.style.display = "none";
+    }
   } else {
-    ro.innerHTML = "Nothing selected.<br>Click a room or marker.";
+    ro.innerHTML = "Nothing selected.<br>Click a room, marker or stair run.";
     pr.style.display = "none";
   }
 }
-function setTool(t) {
-  tool = t; draft = null;
-  ["bSelect","bPoly","bRect"].forEach(b => $(b).classList.toggle("on", $(b).id === "b"+t.charAt(0).toUpperCase()+t.slice(1).replace("oly","oly").replace("ect","ect") || (t==="select"&&b==="bSelect") || (t==="poly"&&b==="bPoly") || (t==="rect"&&b==="bRect")));
-  $("bPoly").classList.toggle("on", t==="poly");
-  $("bRect").classList.toggle("on", t==="rect");
-  $("bRing").classList.toggle("on", t==="ring");
-  $("bRef").classList.toggle("on", t==="ref");
-  $("bSelect").classList.toggle("on", t==="select");
-  $("markerKind").value = "";
-  const hints = {
-    select: "Select: click a room/marker · drag to move · parametric rooms: square = corner, dot = side edge, green = rotate (Shift = 15°); rings: outer/inner radius, arc start/end — all labelled · polygon rooms keep yellow vertices · wheel = zoom, drag empty = pan.",
-    poly: "Polygon: click to place vertices, Enter or double-click to close (min 3) — created right away, name it afterwards.",
-    rect: "Rectangle: click two opposite corners — created right away, name it in the Selection panel.",
-    ring: "Circle / donut: click the centre, then the rim — created right away. Then drag: outer, inner, arc start/end.",
-    marker: `Marker: click to place a ${$ ? $("markerKind").value : ""} marker.`,
-    ref: "Ref point: click to mark this floor's alignment point — use the SAME physical spot (e.g. one stair-core corner) on every floor. Click again to re-place it.",
-  };
-  $("hint").textContent = hints[tool === "marker" ? "marker" : tool];
+function toolHint() {
+  switch (tool) {
+    case "select":
+      return "Select: click a room, marker or stair run · click it AGAIN and drag to move it (unselected shapes never move) · Shift+click adds / removes shapes — selected shapes move together (no resize) · Ctrl+G groups them · a group moves and resizes as one, along its own rotation — CLICK a member to sub-select and edit it (drag still moves the group) · Size / Rot fields edit the numbers directly · parametric rooms: square = corner, dot = side edge, green = rotate (Shift = 15°) · wheel = zoom, drag empty = pan.";
+    case "stair":
+      return `Staircase: click to place the run's points, Enter / double-click to finish (min 2) — it joins floor ${floor} ↔ ${+floor + 1}. Esc cancels.`;
+    case "room":
+      return roomMode === "rect"
+        ? "Rectangle: click two opposite corners — created right away, name it in the Selection panel."
+        : "Circle / donut: click the centre, then the rim — created right away. Then drag: outer, inner, arc start/end.";
+    case "marker":
+      return `Marker: click the map to place ${markerKind === "lift" ? "an elevator" : "an entrance"} marker (switch kind in the Marker panel).`;
+    case "ref":
+      return "Ref point: click to mark this floor's alignment point — use the SAME physical spot (e.g. one stair-core corner) on every floor. Click again to re-place it.";
+  }
+  return "";
+}
+function setTool(t, opt) {
+  tool = t; draft = null; placeMode = null;
+  if (t !== "select") multi = [];   // drawing / ref tools work on the plain selection
+  if (t === "room") roomMode = (opt && opt.mode) || "rect";
+  if (t === "marker") markerKind = (opt && opt.kind) || markerKind || "entrance";
+  const on = {select:"bSelect", stair:"bStair", room:"bRoom", marker:"bMarker", ref:"bRef"};
+  for (const b of Object.values(on)) $(b).classList.toggle("on", on[t] === b);
+  $("hint").textContent = toolHint();
   refresh(true);
+}
+function armAccess(which) {   // armed: next map click places that access point
+  const s = selStair(); if (!s) return;
+  const target = which === "lower" ? s.lo : s.hi;
+  if (+floor !== target) gotoFloor(target);   // keeps the run selected across the switch
+  placeMode = which;
+  $("hint").textContent =
+    `Placing the ${which.toUpperCase()} access point (level ${which === "lower" ? s.lo : s.hi}): click the map — it snaps onto the run. Esc cancels.`;
+  refresh(true);
+}
+function renderToolPanel() {   // updates the sidebar tool panel in place (no re-build → no focus loss)
+  const editingStair = sel && sel.kind === "stair" && selStair();
+  const mode = editingStair ? "stair" : (tool === "stair" || tool === "room" || tool === "marker") ? tool : null;
+  $("toolTitle").style.display = mode ? "" : "none";
+  $("toolPanel").style.display = mode ? "" : "none";
+  if (!mode) return;
+  $("toolTitle").textContent = mode === "stair" ? "Staircase" : mode === "room" ? "Room" : "Marker";
+  $("tpStair").style.display = mode === "stair" ? "" : "none";
+  $("tpRoom").style.display = mode === "room" ? "" : "none";
+  $("tpMarker").style.display = mode === "marker" ? "" : "none";
+  $("tpStairLo").textContent = floor;
+  $("tpStairHi").textContent = +floor + 1;
+  $("tpStairWarn").style.display = !data.storeys[String(+floor + 1)] ? "" : "none";
+  $("tpStairWarnF").textContent = +floor - 1;
+  const drafting = draft && draft.stair;
+  $("tpStairNew").style.display = mode === "stair" && !editingStair && !drafting ? "" : "none";
+  $("tpStairDraft").style.display = drafting ? "" : "none";
+  $("tpStairEdit").style.display = editingStair ? "" : "none";
+  $("tpDraftN").textContent = drafting ? draft.pts.length : 0;
+  if (editingStair) {
+    const s = selStair();
+    if (document.activeElement !== $("scName")) $("scName").value = s.name || "";
+    $("scSpan").textContent = `${s.lo} ↔ ${s.hi}${sel.homeFloor != null ? " (defined on storey " + sel.homeFloor + ")" : ""}`;
+    $("scLoLvl").textContent = s.lo;
+    $("scHiLvl").textContent = s.hi;
+    $("scLowerPos").textContent = s.lower ? `set` : "not set";
+    $("scUpperPos").textContent = s.upper ? `set` : "not set";
+    $("bSetLower").textContent = placeMode === "lower" ? "Click the map…" : "Place on map";
+    $("bSetUpper").textContent = placeMode === "upper" ? "Click the map…" : "Place on map";
+  }
+  $("bRoomRect").classList.toggle("on", mode === "room" && roomMode === "rect");
+  $("bRoomRing").classList.toggle("on", mode === "room" && roomMode === "ring");
+  $("tpRoomNote").textContent = roomMode === "rect"
+    ? "Click two opposite corners on the map — the room is created right away."
+    : "Click the centre, then a rim point. After creation: outer / inner radius, arc start / end.";
+  $("bMkEntrance").classList.toggle("on", mode === "marker" && markerKind === "entrance");
+  $("bMkLift").classList.toggle("on", mode === "marker" && markerKind === "lift");
+  $("tpMarkerNote").textContent = markerKind === "entrance"
+    ? "Entrances mark a venue interface — clicks snap onto the nearest venue edge. Restrooms get their icon automatically."
+    : "Click the map to place a lift icon.";
 }
 function nextId(f) {
   const used = new Set(roomsOf(f).map(r => r.id));
@@ -725,6 +1875,7 @@ function nextId(f) {
 }
 function commitDraft() {
   if (!draft) return;
+  if (draft.stair) return commitStair();
   let room = null;
   if (draft.ring) {
     if (draft.pts.length < 1 || !draft.cur) return cancelDraft();
@@ -738,8 +1889,7 @@ function commitDraft() {
     if (w < 0.5 || h < 0.5) { status("Too small — click two corners further apart.", "warn"); return cancelDraft(); }
     room = {shape:{kind:"rect", c:[+((x0+x1)/2).toFixed(2), +((y0+y1)/2).toFixed(2)], w:+w.toFixed(2), h:+h.toFixed(2), rot:0}};
   } else {
-    if (draft.pts.length < 3) { status("A polygon needs at least 3 vertices.", "warn"); return; }
-    room = {outline: draft.pts.map(p => [+p[0].toFixed(2), +p[1].toFixed(2)])};
+    return cancelDraft();   // freeform polygons are no longer a creation tool
   }
   snapshot();
   const r = {id:nextId(floor), name:"Room", type:"none", ...room};
@@ -751,20 +1901,41 @@ function commitDraft() {
     r.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
   }
   roomsOf(floor).push(r);
-  sel = {kind:"room", idx:roomsOf(floor).length-1};
+  sel = {kind:"room", idx:roomsOf(floor).length-1}; multi = [];
   draft = null; save(); setTool("select");          // handles (incl. rotate node) usable at once
   status("Room added — type its name in the Selection panel.");
   $("pName").focus(); $("pName").select();
 }
+function commitStair() {   // finish a stair-run draft: one line, this floor ↔ floor+1
+  if (!draft || !draft.stair) return;
+  const pts = [];
+  for (const p of draft.pts) {   // drop consecutive near-duplicates (double-click adds one)
+    const q = [+p[0].toFixed(2), +p[1].toFixed(2)];
+    if (!pts.length || Math.hypot(q[0]-pts[pts.length-1][0], q[1]-pts[pts.length-1][1]) > 0.25) pts.push(q);
+  }
+  if (pts.length < 2 || polyLen(pts) < 0.5) {
+    status("A staircase run needs at least 2 distinct points — cancelled.", "warn");
+    return cancelDraft();
+  }
+  snapshot();
+  const s = {id:nextStairId(data, floor), name:"Staircase", lo:+floor, hi:+floor + 1,
+             points:pts, lower:pts[0].slice(), upper:pts[pts.length-1].slice()};
+  stairsOf(floor).push(s);
+  sel = {kind:"stair", idx:stairsOf(floor).length-1, vtx:null}; multi = [];
+  draft = null; save(); refresh(true);
+  status("Staircase added — access points start at the run ends; re-place them on the exact landings from the Staircase panel.");
+}
 function cancelDraft() { draft = null; refresh(true); setTool("select"); }
 let nudgeTimer = null;
 function nudgeSel(dx, dy) {
-  const r = selRoom(), m = selMark();
-  if (!r && !m) return;
+  const r = selRoom(), m = selMark(), sc = selStair();
+  if (!r && !m && !sc && !multi.length) return;
   if (!nudgeTimer) snapshot();               // one undo step per arrow-key burst
   clearTimeout(nudgeTimer);
   nudgeTimer = setTimeout(() => { nudgeTimer = null; }, 900);
-  if (r) {
+  if (multi.length) {   // every selected unit moves together
+    for (const it of resolvedItems()) applyItemDelta(it, dx, dy);
+  } else if (r) {
     if (r.shape) {
       r.shape.c = [+(r.shape.c[0]+dx).toFixed(2), +(r.shape.c[1]+dy).toFixed(2)];
       applyShape(r);
@@ -774,24 +1945,215 @@ function nudgeSel(dx, dy) {
       const [a, b] = bboxOf(r.outline);
       r.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
     }
+  } else if (sc) {
+    const mv = p => p && [+(p[0]+dx).toFixed(2), +(p[1]+dy).toFixed(2)];
+    sc.points = sc.points.map(mv);
+    sc.lower = mv(sc.lower); sc.upper = mv(sc.upper);   // translation keeps them on the run
   } else {
     m.point = [+(m.point[0]+dx).toFixed(2), +(m.point[1]+dy).toFixed(2)];
+    enforceEntrance(m, roomsOf(floor));
   }
   save(); refresh(true);
 }
 function deleteSel() {
-  if (!sel) return;
+  const items = resolvedItems();
+  if (!items.length) return;
   snapshot();
-  if (sel.kind === "room") {
-    const r = roomsOf(floor)[sel.idx];
-    if (!confirm(`Delete room "${r.name}"?`)) { history.pop(); future.length = 0; updateBtns(); return; }
-    roomsOf(floor).splice(sel.idx, 1);
-    status("Room deleted.");
+  let msg = "";
+  if (!multi.length) {
+    if (sel.kind === "room") {
+      const r = roomsOf(selFloor())[sel.idx];
+      if (!confirm(`Delete room "${r.name}"?`)) { history.pop(); future.length = 0; updateBtns(); return; }
+      roomsOf(selFloor()).splice(sel.idx, 1);   // a mirrored room deletes its home venue
+      msg = "Room deleted.";
+    } else if (sel.kind === "stair") {
+      const sc = selStair();
+      if (!confirm(`Delete staircase "${sc.name}" (levels ${sc.lo}–${sc.hi})?`)) { history.pop(); future.length = 0; updateBtns(); return; }
+      stairsOf(selFloor()).splice(sel.idx, 1);   // a mirrored run deletes its home run
+      msg = "Staircase deleted.";
+    } else {
+      marksOf(floor).splice(sel.idx, 1);
+      msg = "Marker deleted.";
+    }
   } else {
-    marksOf(floor).splice(sel.idx, 1);
-    status("Marker deleted.");
+    const nK = items.filter(i2 => i2.kind === "room").length,
+          nS = items.filter(i2 => i2.kind === "stair").length,
+          nM = items.filter(i2 => i2.kind === "marker").length;
+    const what = `${nK} venue${nK===1?"":"s"}, ${nM} marker${nM===1?"":"s"}, ${nS} stair run${nS===1?"":"s"}`;
+    if (!confirm(`Delete ${items.length} shape${items.length>1?"s":""} (${what})?`)) { history.pop(); future.length = 0; updateBtns(); return; }
+    for (const kind of ["room", "stair", "marker"]) {   // splice by descending index per storey
+      const byFloor = {};
+      for (const it of items) if (it.kind === kind) (byFloor[it.fl] = byFloor[it.fl] || []).push(it.idx);
+      for (const fl of Object.keys(byFloor)) {
+        const arr = kind === "room" ? roomsOf(fl) : kind === "stair" ? stairsOf(fl) : marksOf(fl);
+        for (const i of byFloor[fl].sort((a, b) => b - a)) arr.splice(i, 1);
+      }
+    }
+    msg = `Deleted ${items.length} shape${items.length>1?"s":""}.`;
   }
-  sel = null; save(); refresh(true);
+  sel = null; multi = [];
+  pruneGroupsAll();
+  save(); refresh(true);
+  status(msg);
+}
+function pruneGroupsAll() {   // drop members pointing at deleted shapes; empty groups go too
+  for (const f of Object.keys(data.storeys)) {
+    const st = data.storeys[f];
+    if (!Array.isArray(st.groups)) continue;
+    const has = (kind, id) => kind === "room" ? (st.rooms || []).some(r => r.id === id)
+      : kind === "stair" ? (st.staircases || []).some(s => s.id === id)
+      : (st.markers || []).some(m => m.id === id);
+    st.groups = st.groups
+      .map(g => ({...(g.rot != null ? {rot:g.rot} : {}), id:g.id,
+                  members:g.members.filter(m => has(m.kind, m.id))}))
+      .filter(g => g.members.length);
+    if (!st.groups.length) delete st.groups;
+  }
+}
+/* grouping (Ctrl+G / button): a multi-selection of k plain shapes becomes one
+   group; a selection that already contains a group ADDS the loose shapes to it
+   (one level of grouping — never a nested group); several groups merge. */
+const d180 = (a, b) => {   // rotation distance as an AXIS (mod 180° — a box at a and a+180 are parallel)
+  const d = Math.abs(norm360(a) - norm360(b)) % 180;
+  return Math.min(d, 180 - d);
+};
+function groupSelection() {
+  if (sel || !multi.length) { status("Select several shapes first — Shift+click adds to the selection.", "warn"); return; }
+  const floors = new Set(multi.map(u => String(u.kind === "group" ? u.homeFloor : (u.homeFloor != null ? u.homeFloor : floor))));
+  if (floors.size > 1) { status("The selection spans several storeys — a group lives on one storey.", "warn"); return; }
+  const fl = [...floors][0];
+  const gs = multi.filter(u => u.kind === "group").map(u => groupById(u.homeFloor, u.id)).filter(Boolean);
+  const adds = [];
+  for (const u of multi) {
+    if (u.kind === "group") continue;
+    const fl2 = u.kind === "marker" ? floor : (u.homeFloor != null ? u.homeFloor : floor);
+    const arr = u.kind === "room" ? roomsOf(fl2) : u.kind === "stair" ? stairsOf(fl2) : marksOf(fl2);
+    const o = arr[u.idx];
+    if (o && o.id && !adds.some(a => a.kind === u.kind && a.id === o.id)) adds.push({kind:u.kind, id:o.id});
+  }
+  if (gs.length === 1 && !adds.length) { status(`${gs[0].id} is already a group — Shift+click more shapes to add them to it.`, "warn"); return; }
+  if (!gs.length && adds.length < 2) { status("Select at least two shapes to group (Shift+click).", "warn"); return; }
+  snapshot();
+  let g;
+  if (gs.length) {
+    g = gs[0];
+    for (const og of gs.slice(1)) {   // other groups fold in, then the loose shapes
+      for (const m of og.members)
+        if (!g.members.some(x => x.kind === m.kind && x.id === m.id)) g.members.push({kind:m.kind, id:m.id});
+      groupsOf(fl).splice(groupsOf(fl).indexOf(og), 1);
+    }
+    for (const a of adds)
+      if (!g.members.some(x => x.kind === a.kind && x.id === a.id)) g.members.push(a);
+    if (g.rot != null) alignGroupRooms(g, g.rot, fl);   // joiners/merged members take the group rotation
+    status(adds.length ? `${adds.length} shape${adds.length>1?"s":""} added to group ${g.id}${g.rot != null ? " (aligned to the group rotation)" : ""}.`
+                       : `Groups merged into ${g.id}.`);
+  } else {
+    g = {id: nextGroupId(fl), members: adds};
+    // rooms that already share one orientation keep it: the bounding box and the
+    // resize axes follow that rotation from the start (a row of identical
+    // classrooms is scaled along its own axes, not the screen's)
+    const rots = adds.filter(a => a.kind === "room").map(a => {
+      const r = roomsOf(fl).find(o => o.id === a.id);
+      if (!r) return null;
+      return r.shape ? (r.shape.kind === "rect" ? norm360(r.shape.rot) : null) : norm360(obbFull(r.outline).rot);
+    }).filter(v => v != null);
+    if (rots.length && rots.every(x => d180(rots[0], x) < 0.5)) g.rot = +norm360(rots[0]).toFixed(1);
+    ensureGroups(fl).push(g);
+    status(`Grouped ${adds.length} shapes as ${g.id}${g.rot != null ? ` — aligned at ${g.rot.toFixed(1)}°` : ""} (Ctrl+Shift+G dissolves it).`);
+  }
+  sel = null;
+  multi = [{kind:"group", id:g.id, homeFloor:String(fl), shift: +fl !== +floor ? frameOffset(data, fl, floor) : null}];
+  save(); refresh(true);
+}
+function ungroupSelection() {   // dissolve the selected group(s); members stay selected
+  const units = multi.filter(u => u.kind === "group");
+  if (!units.length) { status("Select a group first — clicking any member selects its group.", "warn"); return; }
+  snapshot();
+  const newUnits = [];
+  for (const u of units) {
+    const fl = u.homeFloor, g = groupById(fl, u.id);
+    if (!g) continue;
+    for (const m of g.members) {
+      if (m.kind === "marker" && +fl !== +floor) continue;   // markers aren't visible cross-floor
+      const arr = m.kind === "room" ? roomsOf(fl) : m.kind === "stair" ? stairsOf(fl) : marksOf(fl);
+      const idx = arr.findIndex(o => o.id === m.id);
+      if (idx < 0) continue;
+      newUnits.push(m.kind === "marker" ? {kind:"marker", idx}
+        : {kind:m.kind, idx, homeFloor: +fl !== +floor ? fl : null,
+           shift: +fl !== +floor ? frameOffset(data, fl, floor) : null});
+    }
+    groupsOf(fl).splice(groupsOf(fl).indexOf(g), 1);
+  }
+  sel = null; multi = newUnits; collapseMulti();
+  save(); refresh(true);
+  status("Group dissolved — its shapes stay selected.");
+}
+/* direct text entry (Selection panel): length / width in metres (2 d.p.) and
+   rotation in degrees (1 d.p.). Rects set shape.w/h/rot about the centre;
+   polygons scale along their OBB axes and swing about the area centroid; the
+   group's Box fields scale every member along the group axes. */
+const parseNum = s => { const v = parseFloat(String(s).replace(",", ".")); return Number.isFinite(v) ? v : null; };
+function applySizeEntry(r, wm, dm, rot) {   // values already parsed; null = leave alone
+  if (r.shape && r.shape.kind === "rect") {
+    const s = r.shape;
+    if (wm != null) s.w = +Math.max(0.5, wm / SCALE).toFixed(2);
+    if (dm != null) s.h = +Math.max(0.5, dm / SCALE).toFixed(2);
+    if (rot != null) s.rot = +norm360(rot).toFixed(1);
+    applyShape(r);
+    return;
+  }
+  if (r.shape) return;   // rings keep handle editing (no length/width/rotation entry)
+  const o = obbFull(r.outline), cen = areaCentroid(r.outline);
+  const u = [Math.cos(o.rot*RAD), Math.sin(o.rot*RAD)], v = [-u[1], u[0]];
+  const kx = wm != null ? Math.max(wm/SCALE, 0.5) / Math.max(o.w, 1e-6) : 1;
+  const ky = dm != null ? Math.max(dm/SCALE, 0.5) / Math.max(o.h, 1e-6) : 1;
+  const d = rot != null ? (norm360(rot) - norm360(o.rot)) * RAD : 0;
+  const cosd = Math.cos(d), sind = Math.sin(d);
+  r.outline = r.outline.map(p => {
+    let dx = p[0]-cen[0], dy = p[1]-cen[1];
+    const s = (dx*u[0] + dy*u[1]) * kx, t = (dx*v[0] + dy*v[1]) * ky;
+    const x = cen[0] + s*u[0] + t*v[0], y = cen[1] + s*u[1] + t*v[1];
+    dx = x - cen[0]; dy = y - cen[1];
+    return [+(cen[0] + dx*cosd - dy*sind).toFixed(2), +(cen[1] + dx*sind + dy*cosd).toFixed(2)];
+  });
+  r.area_m2 = +(area(r.outline)*SCALE*SCALE).toFixed(1);
+  const [a, b] = bboxOf(r.outline);
+  r.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
+}
+function commitShapeEntry() {   // the room's Size / Rot fields (Enter or blur)
+  const r = selRoom();
+  if (!r || (r.shape && r.shape.kind !== "rect")) return;
+  const wm = parseNum($("pW").value), dm = parseNum($("pD").value), rot = parseNum($("pRot").value);
+  if (wm == null && dm == null && rot == null) { updateProps(); status("Enter numbers for length, width (m) or rotation (°).", "warn"); return; }
+  snapshot();
+  applySizeEntry(r, wm, dm, rot);
+  save(); refresh(true);
+  status("Size / rotation applied.");
+}
+function commitGroupSize() {   // the group's Box fields: scale every member along the group axes
+  const f = groupFrame();
+  if (!f) return;
+  const wm = parseNum($("pGw").value), dm = parseNum($("pGd").value);
+  if (wm == null && dm == null) { updateProps(); status("Enter numbers for the box length / width (m).", "warn"); return; }
+  snapshot();
+  const kx = wm != null ? Math.max(wm/SCALE, 0.5) / Math.max(f.w, 1e-6) : 1;
+  const ky = dm != null ? Math.max(dm/SCALE, 0.5) / Math.max(f.h, 1e-6) : 1;
+  for (const it of resolvedItems()) {
+    it.orig = origGeometry(it);   // applyItemScale always transforms from the drag-start snapshot
+    applyItemScale(it, f.c, f.u, f.v, kx, ky);
+  }
+  save(); refresh(true);
+  status("Group scaled — every member and position follows.");
+}
+function commitGroupRot() {   // the group's Rot field: align every room to one angle
+  const g = multi.length === 1 && multi[0].kind === "group" ? groupById(multi[0].homeFloor, multi[0].id) : null;
+  if (!g) return;
+  const v = parseNum($("pGrot").value);
+  if (v == null) { updateProps(); status("Enter a rotation in degrees (1 d.p.).", "warn"); return; }
+  snapshot();
+  alignGroupRooms(g, +norm360(v).toFixed(1), multi[0].homeFloor);
+  save(); refresh(true);
+  status(`Group aligned to ${norm360(v).toFixed(1)}° — every room rotated, bounding box follows.`);
 }
 
 let panRaf = 0, panPending = null;
@@ -801,6 +2163,7 @@ function applyPan() {
   const k = view.w / Math.max(1, stage.clientWidth);   // units per css px, fixed while zoom unchanged
   view.x = drag.origView.x - (panPending[0] - drag.startClient[0]) * k;
   view.y = drag.origView.y - (panPending[1] - drag.startClient[1]) * k;
+  clampViewToContent();   // pan stops at the edge of the floor's content
   panPending = null;
   stage.setAttribute("viewBox", `${view.x} ${view.y} ${view.w} ${view.h}`);
   // legend is viewport-anchored: translate the existing group, don't rebuild it
@@ -808,35 +2171,78 @@ function applyPan() {
   if (lg) lg.setAttribute("transform", `translate(${view.x - drag.origView.x} ${view.y - drag.origView.y})`);
 }
 function duplicateSel() {
-  const r = selRoom(), m = selMark();
-  if (!r && !m) return;
+  const items = resolvedItems();
+  if (!items.length) return;
   snapshot();
-  const D = 8;   // offset so the copy is visible
-  if (r) {
-    const c = JSON.parse(JSON.stringify(r));
-    c.id = nextId(floor);
-    c.name = (r.name || "Room") + " copy";
-    if (c.shape) {
-      c.shape.c = [+(c.shape.c[0]+D).toFixed(2), +(c.shape.c[1]+D).toFixed(2)];
-      applyShape(c);
+  const D = 8;   // offset so the copies are visible
+  const idMap = new Map();   // "kind:oldId" → {id, idx} of the copy
+  const newUnits = [];
+  let firstName = null;
+  const copyOne = (kind, fl, obj) => {
+    const c = JSON.parse(JSON.stringify(obj));
+    const t = p => p && [+(p[0]+D).toFixed(2), +(p[1]+D).toFixed(2)];
+    if (kind === "room") {
+      c.id = nextId(fl);
+      c.name = (obj.name || "Room") + " copy";
+      if (c.shape) {
+        c.shape.c = t(c.shape.c);
+        applyShape(c);
+      } else {
+        c.outline = c.outline.map(t);
+        c.area_m2 = +(area(c.outline)*SCALE*SCALE).toFixed(1);
+        const [a, b] = bboxOf(c.outline);
+        c.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
+      }
+      if (c.label) c.label = t(c.label);
+      roomsOf(fl).push(c);
+    } else if (kind === "stair") {
+      c.id = nextStairId(data, fl);
+      c.name = (obj.name || "Staircase") + " copy";
+      c.points = c.points.map(t);
+      c.lower = t(c.lower); c.upper = t(c.upper);
+      stairsOf(fl).push(c);
     } else {
-      c.outline = c.outline.map(p => [+(p[0]+D).toFixed(2), +(p[1]+D).toFixed(2)]);
-      c.area_m2 = +(area(c.outline)*SCALE*SCALE).toFixed(1);
-      const [a, b] = bboxOf(c.outline);
-      c.bbox_m = [+((b[0]-a[0])*SCALE).toFixed(1), +((b[1]-a[1])*SCALE).toFixed(1)];
+      c.id = nextMarkerId(fl);
+      c.point = t(c.point);
+      enforceEntrance(c, roomsOf(fl));
+      marksOf(fl).push(c);
     }
-    if (c.label) c.label = [+(c.label[0]+D).toFixed(2), +(c.label[1]+D).toFixed(2)];
-    roomsOf(floor).push(c);
-    sel = { kind:"room", idx:roomsOf(floor).length-1 };
-    status(`Duplicated as "${c.name}".`);
-  } else {
-    const c = JSON.parse(JSON.stringify(m));
-    c.point = [+(c.point[0]+D).toFixed(2), +(c.point[1]+D).toFixed(2)];
-    marksOf(floor).push(c);
-    sel = { kind:"marker", idx:marksOf(floor).length-1 };
-    status("Marker duplicated.");
+    if (!firstName) firstName = c.name;
+    idMap.set(kind + ":" + obj.id,
+      {id: c.id, idx: (kind === "room" ? roomsOf(fl) : kind === "stair" ? stairsOf(fl) : marksOf(fl)).length - 1});
+  };
+  for (const u of (sel ? [selToUnit(sel)] : multi)) {
+    if (u.kind === "group") {   // the copy becomes its own group with the copied members
+      const fl = u.homeFloor, g = groupById(fl, u.id);
+      if (!g) continue;
+      for (const m of g.members) {
+        const arr = m.kind === "room" ? roomsOf(fl) : m.kind === "stair" ? stairsOf(fl) : marksOf(fl);
+        const obj = arr.find(o => o.id === m.id);
+        if (obj) copyOne(m.kind, fl, obj);
+      }
+      const members = g.members.filter(m => idMap.has(m.kind + ":" + m.id))
+        .map(m => ({kind:m.kind, id:idMap.get(m.kind + ":" + m.id).id}));
+      if (members.length) {
+        const ng = {id: nextGroupId(fl), members};
+        if (g.rot != null) ng.rot = g.rot;   // the copy keeps the group's rotation alignment
+        ensureGroups(fl).push(ng);
+        newUnits.push({kind:"group", id:ng.id, homeFloor:fl, shift:u.shift});
+      }
+    } else {
+      const fl = u.kind === "marker" ? floor : (u.homeFloor != null ? u.homeFloor : floor);
+      const arr = u.kind === "room" ? roomsOf(fl) : u.kind === "stair" ? stairsOf(fl) : marksOf(fl);
+      const obj = arr[u.idx];
+      if (!obj) continue;
+      copyOne(u.kind, String(fl), obj);
+      const nm = idMap.get(u.kind + ":" + obj.id);
+      newUnits.push(u.kind === "marker"
+        ? {kind:"marker", idx:nm.idx}
+        : {kind:u.kind, idx:nm.idx, homeFloor:u.homeFloor, shift:u.shift});
+    }
   }
+  sel = null; multi = newUnits; collapseMulti();
   save(); refresh(true);
+  status(firstName && items.length === 1 ? `Duplicated as "${firstName}".` : `Duplicated ${items.length} shape${items.length>1?"s":""}.`);
 }
 
 /* ---------- pointer interactions ---------- */
@@ -845,23 +2251,62 @@ stage.addEventListener("pointerdown", ev => {
   const [wx, wy] = svgPoint(ev);
   const vt = ev.target.closest ? ev.target.closest(".vtx") : null;
   const mk = ev.target.closest ? ev.target.closest(".mk") : null;
-  const rm = ev.target.closest ? ev.target.closest(".room") : null;
+  const stg = ev.target.closest ? ev.target.closest(".stair") : null;
+  const mm = ev.target.closest ? ev.target.closest(".mirrored") : null;
+  const rm = ev.target.closest ? ev.target.closest(".room:not(.mirrored)") : null;
 
-  if (tool === "poly" || tool === "rect" || tool === "ring") {
-    if (!draft) draft = {pts:[], cur:[wx,wy], rect: tool==="rect", ring: tool==="ring"};
+  if (placeMode) {   // placing a staircase access point (armed from the tool panel)
+    const s = selStair();
+    if (s) {
+      snapshot();
+      const off = frameOffset(data, s.lo, floor);   // display frame → home frame
+      const p = snapToPolyline([+(wx - off[0]).toFixed(2), +(wy - off[1]).toFixed(2)], s.points);
+      s[placeMode] = p;
+      status(`${placeMode === "lower" ? "Lower" : "Upper"} access point set (level ${placeMode === "lower" ? s.lo : s.hi}).`);
+      save();
+    }
+    placeMode = null; refresh(true);
+    return;
+  }
+  if (tool === "stair") {
+    if (draft && draft.stair) {
+      draft.pts.push([wx, wy]);   // finished via Enter / double-click / Finish run (open line, no close gesture)
+      refresh(true);
+      return;
+    }
+    if (!vt && !stg) {   // empty map: start a new run (handles/runs fall through to selection)
+      if (!data.storeys[String(+floor + 1)]) {
+        status(`Staircases are drawn from their LOWER floor — switch to storey ${+floor - 1} to draw one that lands here.`, "warn");
+        return;
+      }
+      sel = null;
+      draft = {pts:[[wx, wy]], cur:[wx,wy], stair:true};   // the starting click is the first point
+      refresh(true);
+      return;
+    }
+  }
+  if (tool === "room") {
+    if (!draft) draft = {pts:[], cur:[wx,wy], rect: roomMode === "rect", ring: roomMode === "ring"};
     if ((draft.rect || draft.ring) && draft.pts.length === 1) { draft.cur = [wx,wy]; commitDraft(); }
-    else if (!draft.rect && !draft.ring && draft.pts.length >= 3 && Math.hypot(wx-draft.pts[0][0], wy-draft.pts[0][1]) < view.w/40) commitDraft();
     else draft.pts.push([wx, wy]);
     refresh(true);
     return;
   }
   if (tool === "marker") {
-    const kind = $("markerKind").value;
-    if (!kind) { status("Pick a marker kind first.", "warn"); return; }
+    const kind = markerKind;
+    if (!kind) { status("Pick a marker kind in the Marker panel.", "warn"); return; }
+    let p = [+wx.toFixed(2), +wy.toFixed(2)], note = "";
+    const probe = {kind, point: p};
+    if (enforceEntrance(probe, roomsOf(floor))) {
+      p = probe.point;
+      note = roomsOf(floor).length
+        ? "Entrance snapped to the nearest venue edge — entrances mark a venue interface."
+        : "No venues on this floor yet — entrance placed unsnapped.";
+    }
     snapshot();
-    marksOf(floor).push({kind, name: kind.charAt(0).toUpperCase()+kind.slice(1), point:[+wx.toFixed(2), +wy.toFixed(2)]});
-    sel = {kind:"marker", idx:marksOf(floor).length-1};
-    save(); refresh(true); status(kind + " marker placed.");
+    marksOf(floor).push({id: nextMarkerId(floor), kind, name: kind.charAt(0).toUpperCase()+kind.slice(1), point: p});
+    sel = {kind:"marker", idx:marksOf(floor).length-1}; multi = [];
+    save(); refresh(true); status(note || (kind + " marker placed."));
     return;
   }
   if (tool === "ref") {
@@ -872,6 +2317,30 @@ stage.addEventListener("pointerdown", ev => {
     return;
   }
   if (vt) {
+    if (sel && sel.kind === "stair" && selStair()) {
+      const s = selStair();
+      const preSnap = JSON.stringify(data);
+      if (vt.dataset.edge !== undefined) {
+        const i = +vt.dataset.edge, a = s.points[i], b = s.points[i+1];
+        s.points.splice(i+1, 0, [+((a[0]+b[0])/2).toFixed(2), +((a[1]+b[1])/2).toFixed(2)]);
+        sel.vtx = i+1;
+        reprojectAccess(s);
+        history.push(preSnap); if (history.length > 80) history.shift(); future.length = 0;
+        status("Node inserted.");
+      } else if (ev.altKey) {
+        if (s.points.length <= 2) { status("A stair run needs at least 2 nodes.", "warn"); return; }
+        s.points.splice(+vt.dataset.vi, 1);
+        sel.vtx = null;
+        reprojectAccess(s);
+        history.push(preSnap); if (history.length > 80) history.shift(); future.length = 0;
+        status("Node deleted.");
+      } else {
+        drag = {type:"svtx", idx:sel.idx, homeFloor: sel.homeFloor, shift: sel.shift, vi:+vt.dataset.vi, start:[wx,wy],
+                snap:preSnap, moved:false};
+      }
+      save(); refresh(true);
+      return;
+    }
     const r = selRoom();
     const preSnap = JSON.stringify(data);
     if (vt.dataset.edge !== undefined) {
@@ -888,28 +2357,127 @@ stage.addEventListener("pointerdown", ev => {
       history.push(preSnap); if (history.length > 80) history.shift(); future.length = 0;
       status("Vertex deleted.");
     } else {
-      drag = {type:"vertex", idx:sel.idx, vi:+vt.dataset.vi, start:[wx,wy],
+      drag = {type:"vertex", idx:sel.idx, homeFloor: sel.homeFloor, shift: sel.shift, vi:+vt.dataset.vi, start:[wx,wy],
               orig:r.outline[+vt.dataset.vi].slice(), snap:preSnap, moved:false};
     }
     save(); refresh(true);
     return;
   }
+  // group resize: the selection is exactly one group → a bbox handle scales every
+  // member along the group's OWN axes (group.rot) about the fixed anchor corner/edge
+  const gh = ev.target.closest ? ev.target.closest(".ghandle") : null;
+  if (gh && !sel && multi.length === 1 && multi[0].kind === "group") {
+    const f = groupFrame();
+    if (f) {
+      const items = resolvedItems();
+      for (const it of items) it.orig = origGeometry(it);
+      const h = {k:gh.dataset.gh, su:+(gh.dataset.su||0), sv:+(gh.dataset.sv||0), ax:gh.dataset.ax, sg:+(gh.dataset.sg||0)};
+      const anchor = h.k === "corner" ? f.at(-h.su, -h.sv)
+                   : h.ax === "u" ? f.at(-h.sg, 0) : f.at(0, -h.sg);
+      const h0 = h.k === "corner" ? f.at(h.su, h.sv)
+               : h.ax === "u" ? f.at(h.sg, 0) : f.at(0, h.sg);
+      const rects = items.filter(it => it.kind === "room" && it.orig.shape && it.orig.shape.kind === "rect");
+      const minRW = rects.length ? Math.min(...rects.map(it => it.orig.shape.w)) : null;
+      const minRH = rects.length ? Math.min(...rects.map(it => it.orig.shape.h)) : null;
+      drag = {type:"groupResize", items, frame:f, anchor, h0,
+              kMinX:Math.max(0.5/f.w, minRW != null ? 0.5/minRW : 0),
+              kMinY:Math.max(0.5/f.h, minRH != null ? 0.5/minRH : 0),
+              h, start:[wx,wy], snap:JSON.stringify(data), moved:false};
+      return;
+    }
+  }
   const shp = ev.target.closest ? ev.target.closest(".shp") : null;
-  if (shp && sel && sel.kind === "room" && roomsOf(floor)[sel.idx] && roomsOf(floor)[sel.idx].shape) {
-    drag = {type:"shape", idx:sel.idx,
+  if (shp && sel && sel.kind === "room" && selRoom() && selRoom().shape) {
+    drag = {type:"shape", idx:sel.idx, homeFloor: sel.homeFloor, shift: sel.shift,
             h:{k:shp.dataset.sh, su:+(shp.dataset.su||0), sv:+(shp.dataset.sv||0), ax:shp.dataset.ax, sg:+(shp.dataset.sg||0)},
             start:[wx,wy], snap:JSON.stringify(data), moved:false};
     return;
   }
+  // ---- multi-select / grouping (Select tool) ----
+  // Shift+click toggles a shape (or its whole group) in the selection; pressing
+  // an ALREADY-SELECTED unit moves everything selected together — and a CLICK
+  // (no drag) on a member of the selected lone group sub-selects that member
+  // for editing (drag = move the group, click = drill in, like the shape
+  // select-then-drag rule). Clicking a new shape selects it — grouped shapes
+  // always select their group. A lone plain selection falls through to the
+  // per-kind drag branches below.
+  if (tool === "select") {
+    const hit = hitSelectionUnit({stg, mk, mm, rm});
+    if (hit) {
+      if (ev.shiftKey) { toggleSelectionUnit(hit.unit); refresh(true); return; }
+      if (selectionHas(hit.unit) || (sel && unitEq(sel, hit.plain))) {
+        if (!sel && multi.length) {
+          const items = resolvedItems();
+          for (const it of items) it.orig = origGeometry(it);
+          drag = {type:"multiMove", items, start:[wx,wy], snap:JSON.stringify(data), moved:false,
+                  drill: multi.length === 1 && multi[0].kind === "group" ? hit.plain : null};
+          return;
+        }
+        // single selection already on this shape (group member sub-selected)
+        // → fall through to its ordinary drag/edit branches
+      } else {
+        selectAsUnit(hit.unit);
+        refresh(true);
+        return;
+      }
+    }
+  }
+  if (stg) {
+    // a stair run: mirrored runs target their HOME run (pointer positions map
+    // home-ward by the constant ref offset, sel.shift). SELECT-THEN-DRAG: the
+    // first click only selects — an already-selected run is the draggable one,
+    // so an accidental press on an unselected run never shifts it
+    const hf = stg.dataset.home, i = +stg.dataset.idx;
+    const s = (data.storeys[hf].staircases || [])[i];
+    if (!s) return;
+    const alreadySel = sel && sel.kind === "stair" && sel.idx === i && String(selFloor()) === hf;
+    if (!alreadySel) {
+      sel = {kind:"stair", idx:i, homeFloor: +hf === +floor ? null : hf,
+             shift: +hf !== +floor ? frameOffset(data, hf, floor) : null, vtx:null};
+      refresh(true);
+      return;
+    }
+    drag = {type:"stair", idx:i, homeFloor: sel.homeFloor, shift: sel.shift, start:[wx,wy],
+            origPts:s.points.map(p=>p.slice()), origLo:s.lower && s.lower.slice(), origUp:s.upper && s.upper.slice(),
+            snap:JSON.stringify(data), moved:false};
+    refresh(true);
+    return;
+  }
   if (mk) {
-    sel = {kind:"marker", idx:+mk.dataset.i, vtx:null};
-    drag = {type:"marker", idx:sel.idx, start:[wx,wy], orig:marksOf(floor)[sel.idx].point.slice(), snap:JSON.stringify(data), moved:false};
+    const i = +mk.dataset.i;
+    if (!sel || sel.kind !== "marker" || sel.idx !== i) {   // first click: select only
+      sel = {kind:"marker", idx:i, vtx:null};
+      refresh(true);
+      return;
+    }
+    drag = {type:"marker", idx:sel.idx, start:[wx,wy], orig:marksOf(floor)[sel.idx].point.slice(),
+            lastValid:marksOf(floor)[sel.idx].point.slice(), snap:JSON.stringify(data), moved:false};
+    refresh(true);
+    return;
+  }
+  if (mm) {
+    // a mirrored room: selecting (and later dragging) targets its HOME venue;
+    // pointer positions map home-ward by the constant ref offset (sel.shift)
+    const hf = mm.dataset.mf, mi = +mm.dataset.mi, hr = roomsOf(hf)[mi];
+    if (!hr) return;
+    if (!sel || sel.kind !== "room" || sel.idx !== mi || sel.homeFloor !== hf) {
+      sel = {kind:"room", idx:mi, homeFloor:hf, shift:frameOffset(data, hf, floor), vtx:null};
+      refresh(true);
+      return;
+    }
+    drag = {type:"room", idx:mi, homeFloor:hf, start:[wx,wy],
+            orig:hr.outline.map(p=>p.slice()), origC:hr.shape ? hr.shape.c.slice() : null,
+            snap:JSON.stringify(data), moved:false};
     refresh(true);
     return;
   }
   if (rm) {
     const i = +rm.dataset.i;
-    if (!sel || sel.kind !== "room" || sel.idx !== i) { sel = {kind:"room", idx:i, vtx:null}; refresh(true); }
+    if (!sel || sel.kind !== "room" || sel.idx !== i || sel.homeFloor != null) {
+      sel = {kind:"room", idx:i, vtx:null};   // first click: select only, no drag
+      refresh(true);
+      return;
+    }
     const r = roomsOf(floor)[i];
     drag = {type:"room", idx:i, start:[wx,wy],
             orig:r.outline.map(p=>p.slice()), origC:r.shape ? r.shape.c.slice() : null,
@@ -919,7 +2487,7 @@ stage.addEventListener("pointerdown", ev => {
   // empty space: pan — driven by raw screen-pixel deltas (never re-samples the
   // SVG transform mid-drag, which oscillates when the CTM is stale)
   drag = {type:"pan", startClient:[ev.clientX, ev.clientY], origView:{...view}};
-  if (sel) { sel = null; refresh(true); }
+  if (sel || multi.length) { sel = null; multi = []; refresh(true); }
 });
 stage.addEventListener("pointermove", ev => {
   if (!drag) { if (draft) { const [wx,wy] = svgPoint(ev); draft.cur = [wx,wy]; refresh(true); } return; }
@@ -932,22 +2500,30 @@ stage.addEventListener("pointermove", ev => {
   }
   const [wx, wy] = svgPoint(ev);
   if (!drag.moved && Math.hypot(wx-drag.start[0], wy-drag.start[1]) > 0.3) drag.moved = true;
+  // editing a staircase through its mirror: pointer positions map to the home
+  // floor's frame by the constant ref offset (translation deltas are identical)
+  const sh = drag.shift || [0, 0];
+  const hx = wx - sh[0], hy = wy - sh[1];
   if (drag.type === "shape") {
-    const r = roomsOf(floor)[drag.idx], s = r.shape;
+    const r = roomsOf(drag.homeFloor != null ? drag.homeFloor : floor)[drag.idx], s = r.shape;
     if (s.kind === "rect") {
       const u = [Math.cos(s.rot*RAD), Math.sin(s.rot*RAD)], v = [-u[1], u[0]];
-      const d = [wx - s.c[0], wy - s.c[1]];
+      const d = [hx - s.c[0], hy - s.c[1]];
       const ls = d[0]*u[0] + d[1]*u[1], lt = d[0]*v[0] + d[1]*v[1];   // pointer in shape frame
       if (drag.h.k === "rot") {
-        let rot = Math.atan2(wy - s.c[1], wx - s.c[0])*DEG - 90;
+        let rot = Math.atan2(hy - s.c[1], hx - s.c[0])*DEG - 90;
         if (ev.shiftKey) rot = Math.round(rot/15)*15;
         s.rot = +norm360(rot).toFixed(1);
       } else if (drag.h.k === "corner") {
         const su = drag.h.su, sv = drag.h.sv;
         const fx = s.c[0] - su*s.w/2*u[0] - sv*s.h/2*v[0];            // opposite corner, fixed
         const fy = s.c[1] - su*s.w/2*u[1] - sv*s.h/2*v[1];
-        s.w = +Math.max(0.5, (ls + su*s.w/2)*su).toFixed(2);
-        s.h = +Math.max(0.5, (lt + sv*s.h/2)*sv).toFixed(2);
+        // dragged corner snaps to nearby vertices (other shapes), then the rect
+        // is re-derived from the fixed opposite corner
+        const q = snapVertex([wx, wy], {room: r, allOfRoom: true, mirrorHome: drag.homeFloor, mirrorIdx: drag.idx}, ev.altKey);
+        const qx = q[0] - sh[0], qy = q[1] - sh[1];                   // dragged corner, shape's frame
+        s.w = +Math.max(0.5, su*((qx-fx)*u[0] + (qy-fy)*u[1])).toFixed(2);
+        s.h = +Math.max(0.5, sv*((qx-fx)*v[0] + (qy-fy)*v[1])).toFixed(2);
         s.c = [+(fx + su*s.w/2*u[0] + sv*s.h/2*v[0]).toFixed(2), +(fy + su*s.w/2*u[1] + sv*s.h/2*v[1]).toFixed(2)];
       } else if (drag.h.k === "side") {
         const sg = drag.h.sg;
@@ -960,23 +2536,130 @@ stage.addEventListener("pointermove", ev => {
           s.h = +Math.max(0.5, (lt + sg*s.h/2)*sg).toFixed(2);
           s.c = [+(fx + sg*s.h/2*v[0]).toFixed(2), +(fy + sg*s.h/2*v[1]).toFixed(2)];
         }
+        // edge-line snap for side drags: the dragged edge aligns collinear onto the
+        // nearest parallel edge. The correction is along the RESIZE axis (the
+        // perpendicular offset between the two parallel lines becomes a w/h change);
+        // the opposite edge stays fixed. Hold Alt to bypass.
+        const thS = settings.snapPx * view.w / Math.max(1, stage.clientWidth);
+        const mvE = rectCorners(s);
+        const i0 = drag.h.ax === "w" ? (sg === 1 ? 1 : 0) : (sg === 1 ? 2 : 0);
+        const i1 = drag.h.ax === "w" ? (sg === 1 ? 2 : 3) : (sg === 1 ? 3 : 1);
+        const aD = [mvE[i0][0] + sh[0], mvE[i0][1] + sh[1]];
+        const bD = [mvE[i1][0] + sh[0], mvE[i1][1] + sh[1]];
+        let mdx = bD[0]-aD[0], mdy = bD[1]-aD[1];
+        const ml = Math.hypot(mdx, mdy);
+        mdx /= ml; mdy /= ml;                             // dragged edge direction (display)
+        const axis = drag.h.ax === "w" ? u : v;           // resize direction
+        let bestAdj = null;
+        const {segs} = snapCandidates({room: r, allOfRoom: true, mirrorHome: drag.homeFloor, mirrorIdx: drag.idx});
+        segs.forEach(([c, d]) => {
+          const fdx = d[0]-c[0], fdy = d[1]-c[1], fl = Math.hypot(fdx, fdy);
+          if (fl < 1e-9) return;
+          const fx = fdx/fl, fy = fdy/fl;
+          if (Math.abs(mdx*fy - mdy*fx) >= 0.08) return;  // parallel to the dragged edge
+          const signed = (aD[0]-c[0])*fy - (aD[1]-c[1])*fx;
+          const mag = Math.abs(signed);
+          if (mag < 0.05 || mag > thS) return;            // already touching / too far
+          const t0 = (aD[0]-c[0])*fx + (aD[1]-c[1])*fy, t1 = (bD[0]-c[0])*fx + (bD[1]-c[1])*fy;
+          if (Math.max(t0,t1) < -thS || Math.min(t0,t1) > fl + thS) return;   // must overlap
+          const cross = axis[0]*fy - axis[1]*fx;          // resize axis × target direction (≈ ±1)
+          if (Math.abs(cross) < 0.5) return;              // resize axis must not slide along the edge
+          const corr = -signed / cross;                   // resize-axis change landing the edge on the line
+          if (bestAdj === null || Math.abs(corr) < Math.abs(bestAdj)) bestAdj = corr;
+        });
+        if (bestAdj !== null) {
+          const half = sg*bestAdj/2;
+          if (drag.h.ax === "w") {
+            s.w = +Math.max(0.5, s.w + sg*bestAdj).toFixed(2);
+            s.c = [+(s.c[0] + half*axis[0]).toFixed(2), +(s.c[1] + half*axis[1]).toFixed(2)];
+          } else {
+            s.h = +Math.max(0.5, s.h + sg*bestAdj).toFixed(2);
+            s.c = [+(s.c[0] + half*axis[0]).toFixed(2), +(s.c[1] + half*axis[1]).toFixed(2)];
+          }
+          const mvE2 = rectCorners(s);
+          drag.snapTarget = [(mvE2[i0][0]+mvE2[i1][0])/2 + sh[0], (mvE2[i0][1]+mvE2[i1][1])/2 + sh[1]];
+        }
       }
     } else {
-      const k = drag.h.k, d0 = Math.hypot(wx - s.c[0], wy - s.c[1]);
+      const k = drag.h.k;
+      // radius / arc / centre handles snap their handle point to nearby vertices
+      const q = snapVertex([wx, wy], {room: r, allOfRoom: true, mirrorHome: drag.homeFloor, mirrorIdx: drag.idx}, ev.altKey);
+      const qx = q[0] - sh[0], qy = q[1] - sh[1];
+      const d0 = Math.hypot(qx - s.c[0], qy - s.c[1]);
       if (k === "center") {
-        s.c = [+wx.toFixed(2), +wy.toFixed(2)];
+        s.c = [+qx.toFixed(2), +qy.toFixed(2)];
       }
       else if (k === "rout") s.rOut = +Math.max(d0, (s.rIn || 0) + 0.5, 0.5).toFixed(2);
       else if (k === "rin") s.rIn = +Math.min(d0, s.rOut - 0.5).toFixed(2);
-      else if (k === "a0") s.a0 = +atan2d(wy - s.c[1], wx - s.c[0]).toFixed(1);
-      else if (k === "a1") s.a1 = +atan2d(wy - s.c[1], wx - s.c[0]).toFixed(1);
+      else if (k === "a0") s.a0 = +atan2d(qy - s.c[1], qx - s.c[0]).toFixed(1);
+      else if (k === "a1") s.a1 = +atan2d(qy - s.c[1], qx - s.c[0]).toFixed(1);
     }
     applyShape(r);
     refresh(true); return;
   }
-  const r = drag.type === "vertex" ? roomsOf(floor)[drag.idx] : drag.type === "room" ? roomsOf(floor)[drag.idx] : null;
+  if (drag.type === "multiMove") {   // every selected unit translates together
+    const dx = wx - drag.start[0], dy = wy - drag.start[1];
+    for (const it of drag.items) applyItemDelta(it, dx, dy);
+    // snapping: the union of the moved geometry, excluding every moved shape
+    const pts = [], edges = [];
+    for (const it of drag.items) {
+      const gm = currentGeom(it);
+      const p = itemDispPts(it.kind, gm, it.off);
+      pts.push(...p);
+      if (it.kind === "stair")
+        for (let i = 1; i < p.length; i++) edges.push([p[i-1], p[i]]);
+      else if (it.kind === "room" && !(gm.shape && gm.shape.kind === "ring") && p.length > 2)
+        p.forEach((q, i) => edges.push([q, p[(i+1)%p.length]]));
+    }
+    const snap = applyTranslateSnap(pts, edges,
+      {rooms:new Set(drag.items.filter(i2 => i2.kind === "room").map(i2 => i2.obj)),
+       stairs:new Set(drag.items.filter(i2 => i2.kind === "stair").map(i2 => i2.obj))}, ev.altKey);
+    if (snap.ax || snap.ay)
+      for (const it of drag.items) applyItemDelta(it, dx + snap.ax, dy + snap.ay);
+    refresh(true); return;
+  }
+  if (drag.type === "groupResize") {   // the bbox handle sets the scale factors along the
+    const h = drag.h, f = drag.frame;   // group's own axes; the anchor corner/edge stays fixed
+    let kx = 1, ky = 1;
+    if (h.k === "corner" || h.ax === "u") {
+      const denom = (drag.h0[0]-drag.anchor[0])*f.u[0] + (drag.h0[1]-drag.anchor[1])*f.u[1];
+      if (Math.abs(denom) > 1e-6)
+        kx = Math.max(((wx-drag.anchor[0])*f.u[0] + (wy-drag.anchor[1])*f.u[1]) / denom, drag.kMinX);
+    }
+    if (h.k === "corner" || h.ax === "v") {
+      const denom = (drag.h0[0]-drag.anchor[0])*f.v[0] + (drag.h0[1]-drag.anchor[1])*f.v[1];
+      if (Math.abs(denom) > 1e-6)
+        ky = Math.max(((wx-drag.anchor[0])*f.v[0] + (wy-drag.anchor[1])*f.v[1]) / denom, drag.kMinY);
+    }
+    for (const it of drag.items) applyItemScale(it, drag.anchor, f.u, f.v, kx, ky);
+    refresh(true); return;
+  }
+  const r = drag.type === "vertex" || drag.type === "room"
+    ? roomsOf(drag.homeFloor != null ? drag.homeFloor : floor)[drag.idx] : null;
+  const sc = drag.type === "svtx" || drag.type === "stair"
+    ? (data.storeys[drag.homeFloor != null ? drag.homeFloor : floor].staircases || [])[drag.idx] : null;
   if (drag.type === "vertex") {
-    r.outline[drag.vi] = [+wx.toFixed(2), +wy.toFixed(2)];
+    const q = snapVertex([wx, wy], {room: r, vi: drag.vi, mirrorHome: drag.homeFloor, mirrorIdx: drag.idx}, ev.altKey);
+    r.outline[drag.vi] = [+(q[0] - sh[0]).toFixed(2), +(q[1] - sh[1]).toFixed(2)];
+  } else if (drag.type === "svtx") {   // stair run node: move it, keep access points on the run
+    const q = snapVertex([wx, wy], {stairHome: String(drag.homeFloor != null ? drag.homeFloor : floor), stairIdx: drag.idx, vi: drag.vi}, ev.altKey);
+    sc.points[drag.vi] = [+(q[0] - sh[0]).toFixed(2), +(q[1] - sh[1]).toFixed(2)];
+    reprojectAccess(sc);
+  } else if (drag.type === "stair") {   // whole run: translate line + access points
+    const dx = wx - drag.start[0], dy = wy - drag.start[1];
+    sc.points = drag.origPts.map(p => [+(p[0]+dx).toFixed(2), +(p[1]+dy).toFixed(2)]);
+    sc.lower = drag.origLo && [+(drag.origLo[0]+dx).toFixed(2), +(drag.origLo[1]+dy).toFixed(2)];
+    sc.upper = drag.origUp && [+(drag.origUp[0]+dx).toFixed(2), +(drag.origUp[1]+dy).toFixed(2)];
+    // snap the moving run's nodes/segments to nearby vertices / edges / runs
+    const disp = sc.points.map(p => [p[0] + sh[0], p[1] + sh[1]]);
+    const edges = disp.slice(0, -1).map((p, i) => [p, disp[i+1]]);
+    const snap = applyTranslateSnap(disp, edges,
+      {stairHome: String(drag.homeFloor != null ? drag.homeFloor : floor), stairIdx: drag.idx, allOfStair: true}, ev.altKey);
+    if (snap.ax || snap.ay) {
+      const mv = p => p && [+(p[0]+snap.ax).toFixed(2), +(p[1]+snap.ay).toFixed(2)];
+      sc.points = sc.points.map(mv);
+      sc.lower = mv(sc.lower); sc.upper = mv(sc.upper);
+    }
   } else if (drag.type === "room") {
     const dx = wx - drag.start[0], dy = wy - drag.start[1];
     if (r.shape) {
@@ -985,48 +2668,93 @@ stage.addEventListener("pointermove", ev => {
     } else {
       r.outline = drag.orig.map(p => [+(p[0]+dx).toFixed(2), +(p[1]+dy).toFixed(2)]);
     }
+    // snap the moving shape's vertices/edges to nearby vertices / edges / points
+    const isRing = r.shape && r.shape.kind === "ring";
+    const disp = isRing
+      ? [[r.shape.c[0] + sh[0], r.shape.c[1] + sh[1]]]   // rings snap by their centre
+      : r.outline.map(p => [p[0] + sh[0], p[1] + sh[1]]);
+    const edges = isRing ? [] : disp.map((p, i) => [p, disp[(i+1) % disp.length]]);
+    const snap = applyTranslateSnap(disp, edges,
+      {room: r, allOfRoom: true, mirrorHome: drag.homeFloor, mirrorIdx: drag.idx}, ev.altKey);
+    if (snap.ax || snap.ay) {
+      if (r.shape) {
+        r.shape.c = [+(r.shape.c[0]+snap.ax).toFixed(2), +(r.shape.c[1]+snap.ay).toFixed(2)];
+        applyShape(r);
+      } else {
+        r.outline = r.outline.map(p => [+(p[0]+snap.ax).toFixed(2), +(p[1]+snap.ay).toFixed(2)]);
+      }
+    }
   } else if (drag.type === "marker") {
-    marksOf(floor)[drag.idx].point = [+wx.toFixed(2), +wy.toFixed(2)];
+    const m = marksOf(floor)[drag.idx];
+    m.point = [+wx.toFixed(2), +wy.toFixed(2)];
+    enforceEntrance(m, roomsOf(floor));   // entrances stay within a venue (live edge snap)
   }
   refresh(true);
 });
 stage.addEventListener("pointerup", () => {
   if (!drag) return;
   if (drag.type === "pan") { if (panRaf) cancelAnimationFrame(panRaf); panRaf = 0; applyPan(); }
+  if (drag.type === "multiMove" && !drag.moved && drag.drill &&
+      multi.length === 1 && multi[0].kind === "group") {   // a CLICK (no drag) on a member
+    const d = drag.drill;                                   // of the selected group sub-
+    drag = null; selectAsUnit(d); refresh(true); return;    // selects it for editing
+  }
   if (drag.type !== "pan" && drag.moved) {
-    const rr = roomsOf(floor)[drag.idx];
-    if (rr && rr.shape) tidyShape(rr.shape);
+    if (drag.type === "room" || drag.type === "vertex" || drag.type === "shape") {
+      const rr = roomsOf(drag.homeFloor != null ? drag.homeFloor : floor)[drag.idx];
+      if (rr && rr.shape) tidyShape(rr.shape);
+    } else if (drag.type === "multiMove" || drag.type === "groupResize") {
+      for (const it of drag.items) if (it.kind === "room" && it.obj.shape) tidyShape(it.obj.shape);
+    }
     history.push(drag.snap); if (history.length > 80) history.shift(); future.length = 0;
     save(); updateProps(); status("Edit applied.");
   }
   drag = null; refresh(true);
 });
 stage.addEventListener("dblclick", ev => {
-  if ((tool === "poly") && draft && draft.pts.length >= 3) commitDraft();
+  if (draft && draft.stair) return commitStair();
+  if (tool !== "select") return;
+  const hit = hitSelectionUnit({
+    stg: ev.target.closest ? ev.target.closest(".stair") : null,
+    mk: ev.target.closest ? ev.target.closest(".mk") : null,
+    mm: ev.target.closest ? ev.target.closest(".mirrored") : null,
+    rm: ev.target.closest ? ev.target.closest(".room:not(.mirrored)") : null,
+  });
+  if (hit && hit.unit.kind === "group") {   // drill into the pressed member:
+    selectAsUnit(hit.plain);                 // edit it on its own
+    refresh(true);
+  }
 });
 stage.addEventListener("wheel", ev => {
   ev.preventDefault();
   const [wx, wy] = svgPoint(ev);
   const k = ev.deltaY > 0 ? 1.15 : 1/1.15;
   view = {x: wx-(wx-view.x)*k, y: wy-(wy-view.y)*k, w: view.w*k, h: view.h*k};
+  clampViewToContent();   // zooming can't walk the plan off-screen either
   refresh(true);
   showZoomRF();
 }, {passive:false});
 
 document.addEventListener("keydown", ev => {
   if (ev.target.tagName === "INPUT" || ev.target.tagName === "SELECT" || ev.target.tagName === "TEXTAREA") return;
-  if (ev.key === "Escape") { if (draft) cancelDraft(); else { sel = null; refresh(true); } }
+  if (ev.key === "Escape") {
+    if (draft) cancelDraft();
+    else if (placeMode) { placeMode = null; $("hint").textContent = toolHint(); refresh(true); }
+    else { sel = null; multi = []; refresh(true); }
+  }
   else if (ev.key === "Enter" && draft) commitDraft();
-  else if ((ev.key === "Delete" || ev.key === "Backspace") && sel) { ev.preventDefault(); deleteSel(); }
+  else if ((ev.key === "Delete" || ev.key === "Backspace") && (sel || multi.length)) { ev.preventDefault(); deleteSel(); }
   else if ((ev.ctrlKey||ev.metaKey) && ev.key.toLowerCase() === "z" && !ev.shiftKey) { ev.preventDefault(); undo(); }
   else if ((ev.ctrlKey||ev.metaKey) && (ev.key.toLowerCase() === "y" || (ev.key.toLowerCase() === "z" && ev.shiftKey))) { ev.preventDefault(); redo(); }
   else if ((ev.ctrlKey||ev.metaKey) && ev.key.toLowerCase() === "d") { ev.preventDefault(); duplicateSel(); }
-  else if (ev.key.toLowerCase() === "v") setTool("select");
-  else if (ev.key.toLowerCase() === "p") setTool("poly");
-  else if (ev.key.toLowerCase() === "r") setTool("rect");
-  else if (ev.key.toLowerCase() === "c") setTool("ring");
+  else if ((ev.ctrlKey||ev.metaKey) && ev.key.toLowerCase() === "g") { ev.preventDefault(); if (ev.shiftKey) ungroupSelection(); else groupSelection(); }
+  else if (ev.key.toLowerCase() === "v" || ev.key === " ") { ev.preventDefault(); setTool("select"); }
+  else if (ev.key.toLowerCase() === "s") setTool("stair");
+  else if (ev.key.toLowerCase() === "r") setTool("room", {mode:"rect"});
+  else if (ev.key.toLowerCase() === "c") setTool("room", {mode:"ring"});
+  else if (ev.key.toLowerCase() === "m") setTool("marker");
   else if (ev.key.toLowerCase() === "f") setTool("ref");
-  else if (/^Arrow/.test(ev.key) && sel) {
+  else if (/^Arrow/.test(ev.key) && (sel || multi.length)) {
     ev.preventDefault();
     const step = ev.altKey ? 0.05 : ev.shiftKey ? 10 : 1;   // 1 unit ≈ 18.5 cm
     const dx = ev.key === "ArrowRight" ? step : ev.key === "ArrowLeft" ? -step : 0;
@@ -1054,19 +2782,25 @@ function buildSvg(f) {
   s += `<title>Nanyang Junior College - Storey ${f} Plan (edited, scale 1:700)</title>\n<style>
  .room path{fill:#eef3f7;stroke:#37474f;stroke-width:.45}
  .room text{font-family:Arial,Helvetica,sans-serif;font-size:2.1px;fill:#1a2733;text-anchor:middle}
- .t-classroom path{fill:#cfe3f7}.t-lab path{fill:#d9f2d9}.t-lecture-theatre path{fill:#fde9c8}.t-hall path{fill:#f3d9f7}
- .t-canteen path{fill:#fff2c9}.t-library path{fill:#d9e8ff}.t-office path{fill:#ffe3ec}.t-wc path{fill:#d9f7f7}
+ /* canonical venue categories (venues.csv) — same tints as the editor */
+ .t-ac-classroom path{fill:#cfe3f7}.t-non-ac-classroom path{fill:#ddeefb}
+ .t-science-lab path{fill:#d9f2d9}.t-phy-lab path{fill:#e3f5e3}.t-computer-room path{fill:#e1f5fe}
+ .t-large-capacity path{fill:#fde9c8}.t-meeting-room path{fill:#ffe3ec}.t-special-room path{fill:#ede7f6}
+ .t-recording-pod path{fill:#fce4ec}.t-sports-facility path{fill:#e2f7e2}
+ .t-canteen path{fill:#fff2c9}
  .t-stair-hall path{fill:#e8e8e8}.t-corridor path{fill:#f5f5f0}.t-open-area path{fill:#fbfbf8}
  .t-void path{fill:#fff;stroke:#90a4ae;stroke-dasharray:2 1.2}.t-canopy path{fill:#f0f0f0;stroke:#90a4ae;stroke-dasharray:3 1.5}
- .t-atrium path{fill:#eef7ee}.t-store path{fill:#eceff1}.t-lobby path{fill:#f8f0e3}.t-sports-hall path{fill:#e2f7e2}
- .t-computer-lab path{fill:#e1f5fe}.t-av-room path{fill:#ede7f6}.t-music path{fill:#fce4ec}.t-study-area path{fill:#fff8e1}
- .t-stair path{fill:#e8e8e8}.t-lift path{fill:#dcedc8}.t-entrance path{fill:#e8f5e9}.t-exit path{fill:#ffebee}
+ .t-atrium path{fill:#eef7ee}.t-store path{fill:#eceff1}.t-lobby path{fill:#f8f0e3}
+ .t-lift path{fill:#dcedc8}.t-entrance path{fill:#e8f5e9}.t-exit path{fill:#ffebee}
+ /* staircases: run line + access icons (badge names the floor the access leads to) */
+ .staircase .casing{fill:none;stroke:#fff;stroke-width:2.3;opacity:.85;stroke-linecap:round;stroke-linejoin:round}
+ .staircase .run{fill:none;stroke:#5d4037;stroke-width:1.2;stroke-linecap:round;stroke-linejoin:round}
+ .stairacc .badge{font-family:Arial,Helvetica,sans-serif;font-size:2.6px;fill:#1a2733;text-anchor:middle;stroke:#fff;stroke-width:.35;paint-order:stroke}
  /* marker glyphs: Google Material Symbols, Apache License 2.0 */
  .marker .disc{fill:#fff;stroke-width:.25}
  .m-restroom .disc{stroke:#00838f}.m-restroom .glyph{fill:#00838f}
  .m-stair .disc{stroke:#5d4037}.m-stair .glyph{fill:#5d4037}
  .m-entrance .disc{stroke:#2e7d32}.m-entrance .glyph{fill:#2e7d32}
- .m-exit .disc{stroke:#c62828}.m-exit .glyph{fill:#c62828}
  .m-lift .disc{stroke:#558b2f}.m-lift .glyph{fill:#558b2f}
  .legend{font-family:Arial;font-size:2.6px;fill:#1a2733}</style>\n<g id="rooms">\n`;
   for (const i of ord([...rs.keys()])) {
@@ -1074,11 +2808,50 @@ function buildSvg(f) {
     const c = defaultLabelPos(r);
     const a = area(r.outline);
     const fs = a > 60 ? 2.1 : a > 25 ? 1.7 : 1.35;
-    s += `<g class="room t-${esc(r.type)}" id="${esc(r.id)}" data-name="${esc(r.name)}" data-type="${esc(r.type)}"${r.shape ? ` data-shape='${esc(JSON.stringify(r.shape))}'` : ""}><path d="${roomD(r)}"/><text x="${c[0].toFixed(2)}" y="${c[1].toFixed(2)}" font-size="${fs}" dominant-baseline="central">${esc(r.name)}</text></g>\n`;
+    const grp = r.id ? groupOfShape(String(f), "room", r.id) : null;
+    s += `<g class="room t-${esc(r.type)}" id="${esc(r.id)}" data-name="${esc(r.name)}" data-type="${esc(r.type)}"${r.height > 1 ? ` data-height="${r.height}"` : ""}${grp ? ` data-group="${esc(grp.id)}"${grp.rot != null ? ` data-group-rot="${grp.rot}"` : ""}` : ""}${r.shape ? ` data-shape='${esc(JSON.stringify(r.shape))}'` : ""}><path d="${roomD(r)}"/><text x="${c[0].toFixed(2)}" y="${c[1].toFixed(2)}" font-size="${fs}" dominant-baseline="central">${esc(r.name)}</text></g>\n`;
   }
-  s += `</g>\n<g id="markers">\n`;
+  // multi-level rooms (height ≥ 2): ref-aligned copies on the levels they span
+  for (const m of roomMirrorsOn(String(f))) {
+    const c = defaultLabelPos(m);
+    const a = area(m.outline);
+    const fs = a > 60 ? 2.1 : a > 25 ? 1.7 : 1.35;
+    const grp = m.id ? groupOfShape(m.mirroredFrom, "room", m.id) : null;
+    s += `<g class="room t-${esc(m.type)}" id="${esc(m.id)}-s${f}" data-name="${esc(m.name)}" data-type="${esc(m.type)}" data-height="${m.height || 1}" data-mirrored-from="storey ${esc(m.mirroredFrom)}"${grp ? ` data-group="${esc(grp.id)}"${grp.rot != null ? ` data-group-rot="${grp.rot}"` : ""}` : ""}${m.shape ? ` data-shape='${esc(JSON.stringify(m.shape))}'` : ""}><path d="${roomD(m)}"/><text x="${c[0].toFixed(2)}" y="${c[1].toFixed(2)}" font-size="${fs}" dominant-baseline="central">${esc(m.name)}</text></g>\n`;
+  }
+  s += `</g>\n`;
+  // staircase runs touching this storey: the line renders on both floors of its
+  // pair; a run defined on another floor is ref-aligned and marked data-mirrored-from
+  const scv = stairViewsOn(String(f));
+  if (scv.length) {
+    s += `<g id="staircases">\n`;
+    for (const v of scv) {
+      const grp = v.s.id ? groupOfShape(v.home, "stair", v.s.id) : null;
+      s += `<g class="staircase" id="${esc(v.s.id)}${v.mirrored ? "-s" + f : ""}" data-name="${esc(v.s.name)}" data-levels="${v.s.lo}-${v.s.hi}"${grp ? ` data-group="${esc(grp.id)}"${grp.rot != null ? ` data-group-rot="${grp.rot}"` : ""}` : ""}${v.mirrored ? ` data-mirrored-from="storey ${esc(v.home)}"` : ""}>`;
+      s += `<path class="casing" d="${polyD(v.pts)}"/><path class="run" d="${polyD(v.pts)}"/>`;
+      const acc = v.mirrored ? v.upper : v.lower;   // lower access on lo, upper on hi
+      if (acc)
+        s += `<g class="marker m-stair stairacc" data-access="${v.mirrored ? "upper" : "lower"}" transform="translate(${acc[0].toFixed(2)},${acc[1].toFixed(2)})"><circle class="disc" r="2.9"/><path class="glyph" d="${GLYPH.stair}" transform="scale(.004375) translate(-480 480)"/><text class="badge" y="5.1">${v.mirrored ? "↓" + v.s.lo : "↑" + v.s.hi}</text></g>`;
+      s += `</g>\n`;
+    }
+    s += `</g>\n`;
+  }
+  s += `<g id="markers">\n`;
   for (const m of mks) {
-    s += `<g class="marker m-${esc(m.kind)}" data-kind="${esc(m.kind)}" data-name="${esc(m.name)}" transform="translate(${m.point[0]},${m.point[1]})"><circle class="disc" r="2.9"/><path class="glyph" d="${GLYPH[m.kind]}" transform="scale(.004375) translate(-480 480)"/></g>\n`;
+    const grp = m.id ? groupOfShape(String(f), "marker", m.id) : null;
+    s += `<g class="marker m-${esc(m.kind)}"${m.id ? ` id="${esc(m.id)}"` : ""} data-kind="${esc(m.kind)}" data-name="${esc(m.name)}"${grp ? ` data-group="${esc(grp.id)}"${grp.rot != null ? ` data-group-rot="${grp.rot}"` : ""}` : ""} transform="translate(${m.point[0]},${m.point[1]})"><circle class="disc" r="2.9"/><path class="glyph" d="${GLYPH[m.kind]}" transform="scale(.004375) translate(-480 480)"/></g>\n`;
+  }
+  // restroom markers are derived from venues: one at each restroom venue's centroid,
+  // repeated on every level a multi-level restroom spans
+  for (const r of rs) {
+    if (r.type !== "restroom" && r.type !== "wc") continue;
+    const c = defaultLabelPos(r);
+    s += `<g class="marker m-restroom" data-derived="restroom" data-venue="${esc(r.id)}" transform="translate(${c[0].toFixed(2)},${c[1].toFixed(2)})"><circle class="disc" r="2.9"/><path class="glyph" d="${GLYPH.restroom}" transform="scale(.004375) translate(-480 480)"/></g>\n`;
+  }
+  for (const m of roomMirrorsOn(String(f))) {
+    if (m.type !== "restroom" && m.type !== "wc") continue;
+    const c = defaultLabelPos(m);
+    s += `<g class="marker m-restroom" data-derived="restroom" data-venue="${esc(m.id)}" data-mirrored-from="storey ${esc(m.mirroredFrom)}" transform="translate(${c[0].toFixed(2)},${c[1].toFixed(2)})"><circle class="disc" r="2.9"/><path class="glyph" d="${GLYPH.restroom}" transform="scale(.004375) translate(-480 480)"/></g>\n`;
   }
   s += `</g>\n<g id="legend" class="legend"><text x="${x+4}" y="${y+7}" font-size="3.6" font-weight="bold">NANYANG JUNIOR COLLEGE - STOREY ${f} PLAN</text>`;
   s += `<text x="${x+4}" y="${y+11}" font-size="2.4">${esc((data.site && data.site.unit_mapping) || "")} - edited in NYJC Floor Plan Editor</text></g>\n`;
@@ -1113,31 +2886,59 @@ const fillTypeSelect = sel => {
   const g1 = document.createElement("optgroup"); g1.label = "Venue categories (venues.csv)";
   for (const [s, l] of VENUE_CATS) g1.append(new Option(l, s));
   const g2 = document.createElement("optgroup"); g2.label = "Plan anatomy";
-  for (const [s, l] of STRUCTURAL) g2.append(new Option(l, s));
-  const g3 = document.createElement("optgroup"); g3.label = "Legacy";
-  for (const t of LEGACY_TYPES) g3.append(new Option(t, t));
-  sel.append(g1, g2, g3);
+  for (const [s, l] of STRUCTURAL) if (!DROPDOWN_STRUCTURAL_SKIP.includes(s)) g2.append(new Option(l, s));
+  sel.append(g1, g2);
 };
 fillTypeSelect($("pType"));
+for (const n of [1, 2, 3]) $("pHeight").append(new Option(`${n} level${n > 1 ? "s" : ""}`, String(n)));
+$("pHeight").onchange = () => {
+  const r = selRoom(); if (!r) return;
+  snapshot();
+  const n = +$("pHeight").value;
+  if (n > 1) r.height = n; else delete r.height;   // single-level rooms carry no field
+  const [sLo, sHi] = heightSpan(r, selFloor());
+  save(); refresh(true);
+  status(n > 1
+    ? `Room now spans levels ${sLo}–${sHi} — it renders (and stays editable) on each.`
+    : "Room is single-level again.");
+};
 /* floating level selector (Google Maps style): highest storey at the top,
    current one highlighted; switching keeps the global zoom and pins the same
    physical spot under the cursor — floors are aligned on their ◎ reference
    points (background corner is the fallback until every floor has one) */
-const bgOrigin = f => {
-  const bg = data.storeys[f].background;
-  return bg ? [bg.x, bg.y] : [0, 0];
-};
+function reselectAcrossFloors(f) {   // floor switch: keep the selection when the
+  if (!sel) return null;             // selected shape exists on the new floor —
+  const hf = String(selFloor());     // rooms with height and stair runs re-select
+  if (multi.length) return null;     // as their mirror; markers stay per-floor;
+  if (sel.kind === "marker") return null;   // multi-selections are per-storey
+  const arr = sel.kind === "room" ? roomsOf(hf) : stairsOf(hf);
+  const o = arr[sel.idx];
+  if (!o) return null;
+  if (sel.kind === "room") {
+    const [lo, hi] = heightSpan(o, +hf);
+    if (f < lo || f > hi) return null;
+  } else if (f !== +hf && f !== o.hi) {
+    return null;   // a stair run spans exactly lo ↔ hi
+  }
+  return +hf === f
+    ? {kind: sel.kind, idx: sel.idx, vtx: sel.vtx != null ? sel.vtx : null}
+    : {kind: sel.kind, idx: sel.idx, homeFloor: hf, shift: frameOffset(data, hf, f), vtx: sel.vtx != null ? sel.vtx : null};
+}
 function gotoFloor(f) {
   const prev = floor;
   const a = data.storeys[prev] && data.storeys[prev].ref, b = data.storeys[f].ref;
-  floor = f; sel = null; draft = null;
+  const keep = reselectAcrossFloors(f);   // decided BEFORE floor changes (selFloor depends on it)
+  floor = f; draft = null; placeMode = null;
+  sel = keep; multi = [];
   if (!view) { refresh(); markFloorBtn(); return; }
   /* invariant: zoom and plan position are both preserved — the point of the
      building under the cursor stays under the cursor */
-  const [ax, ay] = a && b ? a : bgOrigin(prev);
-  const [bx, by] = a && b ? b : bgOrigin(f);
+  const [ax, ay] = a && b ? a : bgOrigin(data, prev);
+  const [bx, by] = a && b ? b : bgOrigin(data, f);
   view = { x: bx + (view.x - ax), y: by + (view.y - ay), w: view.w, h: view.h };
+  clampViewToContent();   // fallback alignment can land off-content on floors without refs
   refresh(true); markFloorBtn();
+  $("hint").textContent = toolHint();
   if (!(a && b)) {
     const missing = a ? f : prev;
     status(`Floor ${missing} has no ◎ reference point yet — view kept only approximately. Mark the same physical spot on every floor.`);
@@ -1153,31 +2954,45 @@ for (let f = 5; f >= 1; f--) {
 }
 function markFloorBtn() { [...$("levels").children].forEach(b => b.classList.toggle("on", +b.dataset.f === floor)); }
 $("bSelect").onclick = () => setTool("select");
-$("bPoly").onclick = () => setTool("poly");
-$("bRect").onclick = () => setTool("rect");
-$("bRing").onclick = () => setTool("ring");
+$("bStair").onclick = () => setTool("stair");
+$("bRoom").onclick = () => setTool("room");
+$("bMarker").onclick = () => setTool("marker");
 $("bRef").onclick = () => setTool("ref");
-$("bToRect").onclick = () => {
-  const r = selRoom(); if (!r || r.shape) return;
-  snapshot();
-  const o = obbFull(r.outline);
-  r.shape = {kind:"rect", c:[+o.c[0].toFixed(2), +o.c[1].toFixed(2)], w:+o.w.toFixed(2), h:+o.h.toFixed(2), rot:+o.rot.toFixed(1)};
-  applyShape(r); save(); refresh(true);
-  status("Converted to parametric rectangle (handles now follow the rotation).");
+/* tool panel controls */
+$("bFinishStair").onclick = () => commitStair();
+$("bCancelStair").onclick = () => cancelDraft();
+$("bSetLower").onclick = () => armAccess("lower");
+$("bSetUpper").onclick = () => armAccess("upper");
+$("bScInsVtx").onclick = () => status("Click a blue + handle on the run to insert a node there.");
+$("bScDelVtx").onclick = () => {
+  const s = selStair();
+  if (s && sel.vtx != null && s.points.length > 2) {
+    snapshot(); s.points.splice(sel.vtx, 1); sel.vtx = null; reprojectAccess(s);
+    save(); refresh(true); status("Node deleted.");
+  } else status("Highlight a node first (click it).", "warn");
 };
-$("bToRing").onclick = () => {
-  const r = selRoom(); if (!r || r.shape) return;
+$("scName").oninput = () => { const s = selStair(); if (s) { s.name = $("scName").value; refresh(true); } };
+$("bRoomRect").onclick = () => setTool("room", {mode:"rect"});
+$("bRoomRing").onclick = () => setTool("room", {mode:"ring"});
+$("bMkEntrance").onclick = () => setTool("marker", {kind:"entrance"});
+$("bMkLift").onclick = () => setTool("marker", {kind:"lift"});
+$("bToPoly").onclick = () => {
+  const r = selRoom(); if (!r || !r.shape) return;
   snapshot();
-  const c = centroid(r.outline);
-  let rOut = 0; for (const p of r.outline) rOut += Math.hypot(p[0]-c[0], p[1]-c[1]);
-  rOut = Math.max(0.5, rOut/r.outline.length);
-  r.shape = {kind:"ring", c:[+c[0].toFixed(2), +c[1].toFixed(2)], rOut:+rOut.toFixed(2), rIn:0, a0:0, a1:360};
-  applyShape(r); save(); refresh(true);
-  status("Converted to parametric circle — drag the inner node outward to make a donut.");
+  convertToPolygon(r);
+  sel.vtx = null;   // polygon now: vertex editing takes over from shape handles
+  save(); refresh(true);
+  status("Converted to polygon (one-way — parametric handles removed).");
 };
-$("markerKind").onchange = () => { if ($("markerKind").value) { tool = "marker"; draft = null; $("hint").textContent = "Marker: click to place a " + $("markerKind").value + " marker."; } else setTool("select"); };
 $("bUndo").onclick = undo; $("bRedo").onclick = redo; $("bDelete").onclick = deleteSel;
 $("bDup").onclick = duplicateSel;
+$("bGroup").onclick = groupSelection; $("bUngroup").onclick = ungroupSelection;
+$("pW").onchange = () => commitShapeEntry();
+$("pD").onchange = () => commitShapeEntry();
+$("pRot").onchange = () => commitShapeEntry();
+$("pGw").onchange = () => commitGroupSize();
+$("pGd").onchange = () => commitGroupSize();
+$("pGrot").onchange = () => commitGroupRot();
 $("pName").oninput = () => { const r = selRoom(); if (r) { r.name = $("pName").value; refresh(true); } };
 $("pType").onchange = () => { const r = selRoom(); if (r) { r.type = $("pType").value; refresh(true); } };
 $("bAddVtxMode").onclick = () => status("Click a blue + handle on a room edge to insert a vertex there.");
@@ -1192,8 +3007,9 @@ $("fileJson").onchange = ev => {
     try {
       const d = JSON.parse(rd.result);
       if (!d.storeys || !d.site) throw new Error("missing storeys/site");
-      snapshot(); data = d; floor = 1; view = null; refresh(); markFloorBtn(); save();
-      status("Imported " + file.name);
+      const n = repairData(d);
+      snapshot(); data = d; floor = 1; view = null; sel = null; multi = []; refresh(); markFloorBtn(); save();
+      status("Imported " + file.name + (repairNote(n) ? " — " + repairNote(n) : ""));
     } catch (e) { status("Import failed: " + e.message, "bad"); }
   };
   rd.readAsText(file);
@@ -1201,11 +3017,28 @@ $("fileJson").onchange = ev => {
 $("bReset").onclick = () => {
   if (!confirm("Discard all edits and restore the original data?")) return;
   localStorage.removeItem(LS_KEY);
-  history = []; future = []; load(); floor = 1; view = null; refresh(); markFloorBtn();
+  history = []; future = []; sel = null; multi = []; load(); floor = 1; view = null; refresh(); markFloorBtn();
   status("Reset to embedded data.");
 };
 $("cGrid").onchange = () => refresh(true);
 $("cBg").onchange = () => { bgEnabled = $("cBg").checked; refresh(true); };
+/* settings panel */
+$("bSettings").onclick = () => $("settings").classList.toggle("open");
+$("cSnap").checked = settings.snapVertex;
+$("rSnap").value = settings.snapPx;
+$("snapPxVal").textContent = settings.snapPx + " px";
+$("rSnap").disabled = !settings.snapVertex;
+$("cSnap").onchange = () => {
+  settings.snapVertex = $("cSnap").checked;
+  $("rSnap").disabled = !settings.snapVertex;
+  saveSettings();
+  status(settings.snapVertex ? "Snapping enabled (vertices and edges)." : "Snapping disabled.");
+};
+$("rSnap").oninput = () => {
+  settings.snapPx = +$("rSnap").value;
+  $("snapPxVal").textContent = settings.snapPx + " px";
+  saveSettings();
+};
 window.addEventListener("resize", () => refresh(true));
 
 /* ---------- boot ---------- */
@@ -1220,7 +3053,7 @@ floor = 1;
 refresh();
 markFloorBtn();
 setTool("select");
-status(localStorage.getItem(LS_KEY) ? "Ready (loaded autosaved edits)." : "Ready.");
+status((localStorage.getItem(LS_KEY) ? "Ready (loaded autosaved edits)." : "Ready.") + (repairedMsg ? " " + repairedMsg : ""));
 </script>
 </body>
 </html>
