@@ -209,9 +209,9 @@
       <div id="grpProps" style="display:none">
         <div class="kv">
           <b>Box</b><span style="display:flex;gap:4px;align-items:center"><input type="text" id="pGw" title="Bounding-box length in metres — scales every member about the box centre" style="width:56px"><span>×</span><input type="text" id="pGd" title="Bounding-box depth in metres" style="width:56px"><span>m</span></span>
-          <b>Rot</b><input type="text" id="pGrot" title="Align rotation — sets every room in the group to this angle; the bounding box follows">
+          <b>Rot</b><span style="display:flex;gap:4px;align-items:center"><input type="text" id="pGrot" title="Align rotation — sets every room in the group to this angle; the bounding box follows"><button id="bGAvgRot" title="One click: set every room to the members' average rotation — the bounding box follows">avg</button></span>
         </div>
-        <div class="tpnote" style="margin-top:6px">Box size scales all members together (length/depth in metres); Rot aligns every room to the same angle and the bounding box follows. Click a member to sub-select it and edit it on its own.</div>
+        <div class="tpnote" style="margin-top:6px">Box size scales all members together (length/depth in metres); Rot aligns every room to the same angle and the bounding box follows. Avg takes the members' average rotation in one click. Click a member to sub-select it and edit it on its own.</div>
       </div>
       <div id="vtxBtns" style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
         <button id="bAddVtxMode" title="Next edge-click inserts a vertex">Insert vertex</button>
@@ -1672,15 +1672,24 @@ function drawGroupHandles() {   // the lone selected group: dashed bbox + 8 resi
   }
   stage.appendChild(g);
 }
-function alignRoomTo(r, rot) {   // put one room on an exact rotation: rects set shape.rot;
-  if (r.shape && r.shape.kind === "rect") {   // polygons swing about their area centroid
-    r.shape.rot = +norm360(rot).toFixed(1);
+function alignRoomTo(r, rot) {   // put one room on an exact orientation: rects re-express
+  const tgt = +norm360(rot).toFixed(1);   // their footprint on the target edge directions —
+  if (r.shape && r.shape.kind === "rect") {   // a room traced "the other way round" stores
+    const s = r.shape, d = ((tgt - norm360(s.rot)) % 180 + 180) % 180;   // rot ⊥ to its
+    if (Math.abs(d - 90) < 0.5) {           // neighbours. Exactly ⊥ is a tie: swap w/h so the
+      if (s.h > s.w) { const t = s.w; s.w = s.h; s.h = t; }   // longer edge sits on tgt — the
+    } else {                                 // footprint never moves; otherwise keep each
+      s.rot = d > 90 ? +((tgt + 90) % 360).toFixed(1) : tgt;   // edge length on its nearest target direction
+    }
+    s.rot = tgt;
     applyShape(r);
     return;
   }
   if (r.shape) return;   // rings have no orientation
   const o = obbFull(r.outline), cen = areaCentroid(r.outline);
-  const d = (norm360(rot) - norm360(o.rot)) * RAD;
+  let d = (norm360(rot) - norm360(o.rot)) * RAD;   // d and d±180 land the edges on the same
+  if (d > Math.PI / 2) d -= Math.PI;               // two directions — swing the shorter way
+  if (d < -Math.PI / 2) d += Math.PI;
   const cosd = Math.cos(d), sind = Math.sin(d);
   r.outline = r.outline.map(p => {
     const dx = p[0]-cen[0], dy = p[1]-cen[1];
@@ -2017,6 +2026,20 @@ const d180 = (a, b) => {   // rotation distance as an AXIS (mod 180° — a box 
   const d = Math.abs(norm360(a) - norm360(b)) % 180;
   return Math.min(d, 180 - d);
 };
+function meanMemberRot(g, fl) {   // circular mean of the ROOM members' rotations on the
+  const rots = g.members          // mod-180 box axis, so 178° and 2° average to 0° not 90°
+    .filter(m => m.kind === "room")
+    .map(m => {
+      const r = roomsOf(fl).find(o => o.id === m.id);
+      if (!r) return null;
+      return r.shape ? (r.shape.kind === "rect" ? norm360(r.shape.rot) : null) : norm360(obbFull(r.outline).rot);
+    }).filter(v => v != null);
+  if (!rots.length) return null;
+  let s = 0, c = 0;
+  for (const r of rots) { s += Math.sin(2*r*RAD); c += Math.cos(2*r*RAD); }
+  if (Math.hypot(s, c) < 1e-9) return null;   // axes cancel out (e.g. one at 0°, one at 90°)
+  return norm360(0.5 * Math.atan2(s, c) / RAD);
+}
 function groupSelection() {
   if (sel || !multi.length) { status("Select several shapes first — Shift+click adds to the selection.", "warn"); return; }
   const floors = new Set(multi.map(u => String(u.kind === "group" ? u.homeFloor : (u.homeFloor != null ? u.homeFloor : floor))));
@@ -2541,6 +2564,7 @@ stage.addEventListener("pointermove", ev => {
         // perpendicular offset between the two parallel lines becomes a w/h change);
         // the opposite edge stays fixed. Hold Alt to bypass.
         const thS = settings.snapPx * view.w / Math.max(1, stage.clientWidth);
+        drag.snapTarget = null;
         const mvE = rectCorners(s);
         const i0 = drag.h.ax === "w" ? (sg === 1 ? 1 : 0) : (sg === 1 ? 2 : 0);
         const i1 = drag.h.ax === "w" ? (sg === 1 ? 2 : 3) : (sg === 1 ? 3 : 1);
@@ -2550,6 +2574,7 @@ stage.addEventListener("pointermove", ev => {
         const ml = Math.hypot(mdx, mdy);
         mdx /= ml; mdy /= ml;                             // dragged edge direction (display)
         const axis = drag.h.ax === "w" ? u : v;           // resize direction
+        const dmot = drag.prevH ? (hx - drag.prevH[0])*axis[0] + (hy - drag.prevH[1])*axis[1] : 0;
         let bestAdj = null;
         const {segs} = snapCandidates({room: r, allOfRoom: true, mirrorHome: drag.homeFloor, mirrorIdx: drag.idx});
         segs.forEach(([c, d]) => {
@@ -2564,13 +2589,16 @@ stage.addEventListener("pointermove", ev => {
           if (Math.max(t0,t1) < -thS || Math.min(t0,t1) > fl + thS) return;   // must overlap
           const cross = axis[0]*fy - axis[1]*fx;          // resize axis × target direction (≈ ±1)
           if (Math.abs(cross) < 0.5) return;              // resize axis must not slide along the edge
+          if (dmot * signed * cross > 0) return;          // pointer receding from this line — an edge
+                                                          // flush with a stack of room edges must be able
+                                                          // to leave, not hold for a whole threshold width
           const corr = -signed / cross;                   // resize-axis change landing the edge on the line
           if (bestAdj === null || Math.abs(corr) < Math.abs(bestAdj)) bestAdj = corr;
         });
         if (bestAdj !== null) {
-          const half = sg*bestAdj/2;
-          if (drag.h.ax === "w") {
-            s.w = +Math.max(0.5, s.w + sg*bestAdj).toFixed(2);
+          const half = bestAdj/2;                         // opposite edge fixed: c moves half of the
+          if (drag.h.ax === "w") {                        // dragged edge's total move (NOT sg-scaled —
+            s.w = +Math.max(0.5, s.w + sg*bestAdj).toFixed(2);   // that slid the whole room on sg=-1 handles)
             s.c = [+(s.c[0] + half*axis[0]).toFixed(2), +(s.c[1] + half*axis[1]).toFixed(2)];
           } else {
             s.h = +Math.max(0.5, s.h + sg*bestAdj).toFixed(2);
@@ -2579,6 +2607,7 @@ stage.addEventListener("pointermove", ev => {
           const mvE2 = rectCorners(s);
           drag.snapTarget = [(mvE2[i0][0]+mvE2[i1][0])/2 + sh[0], (mvE2[i0][1]+mvE2[i1][1])/2 + sh[1]];
         }
+        drag.prevH = [hx, hy];
       }
     } else {
       const k = drag.h.k;
@@ -2993,6 +3022,17 @@ $("pRot").onchange = () => commitShapeEntry();
 $("pGw").onchange = () => commitGroupSize();
 $("pGd").onchange = () => commitGroupSize();
 $("pGrot").onchange = () => commitGroupRot();
+$("bGAvgRot").onclick = () => {   // one click: every room takes the members' average rotation
+  const u = multi.length === 1 && multi[0].kind === "group" ? multi[0] : null;
+  const g = u ? groupById(u.homeFloor, u.id) : null;
+  if (!g) return;
+  const rot = meanMemberRot(g, u.homeFloor);
+  if (rot == null) { status("No oriented rooms in this group — markers and stair runs have no rotation.", "warn"); return; }
+  snapshot();
+  alignGroupRooms(g, +rot.toFixed(1), u.homeFloor);
+  save(); refresh(true);
+  status(`Group aligned to ${rot.toFixed(1)}° — the members' average rotation, bounding box follows.`);
+};
 $("pName").oninput = () => { const r = selRoom(); if (r) { r.name = $("pName").value; refresh(true); } };
 $("pType").onchange = () => { const r = selRoom(); if (r) { r.type = $("pType").value; refresh(true); } };
 $("bAddVtxMode").onclick = () => status("Click a blue + handle on a room edge to insert a vertex there.");
