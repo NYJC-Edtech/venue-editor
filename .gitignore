@@ -3,12 +3,15 @@
 *.pdf
 *.png
 
-# build outputs of convert_inkscape.py — rebuild with: python convert_inkscape.py
-# (editor.html embeds metadata.json + the background images, so it is a build
-# artifact, not source; the buildable code is editor_template.html)
-/editor.html
-/metadata.json
+# published build artifacts — served by GitHub Pages from the main branch root.
+# editor.html embeds metadata.json + the background images; rebuild locally with:
+#   python build_check.py            (re-embed current metadata.json)
+#   python convert_inkscape.py       (full rebuild from the SVG)
+!/editor.html
+!/metadata.json
 
-# OS junk
+# OS junk & local state
 Thumbs.db
 .DS_Store
+__pycache__/
+_autosave_user.json

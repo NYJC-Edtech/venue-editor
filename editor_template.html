@@ -3094,6 +3094,20 @@ refresh();
 markFloorBtn();
 setTool("select");
 status((localStorage.getItem(LS_KEY) ? "Ready (loaded autosaved edits)." : "Ready.") + (repairedMsg ? " " + repairedMsg : ""));
+/* remote metadata: editor.html?src=<url> pulls a hosted metadata.json through the
+   same import path as Import JSON — e.g. ?src=metadata.json beside the hosted page */
+{
+  const src = new URLSearchParams(location.search).get("src");
+  if (src) (async () => {
+    try {
+      const d = await (await fetch(src, { cache: "no-store" })).json();
+      if (!d.storeys || !d.site) throw new Error("missing storeys/site");
+      const n = repairData(d);
+      snapshot(); data = d; floor = 1; view = null; sel = null; multi = []; refresh(); markFloorBtn(); save();
+      status("Loaded " + src + (repairNote(n) ? " — " + repairNote(n) : "") + " — edits autosave locally; Export JSON to hand back.");
+    } catch (e) { status("Remote load failed: " + e.message, "bad"); }
+  })();
+}
 </script>
 </body>
 </html>
